@@ -1,0 +1,617 @@
+
+import React, { useState } from 'react';
+import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Shield, Zap, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, ArrowRight, Clock, UserPlus, X, Check, Save, MessageSquare } from 'lucide-react';
+import { HomeData, ScopePost, ScopeCategory, TestimonialItem, FooterLink, MemberItem } from '../types';
+import TeamView from './TeamView';
+
+interface HomepageManagementViewProps {
+  homeData: HomeData;
+  setHomeData: React.Dispatch<React.SetStateAction<HomeData>>;
+  scopePosts: ScopePost[];
+  setScopePosts: React.Dispatch<React.SetStateAction<ScopePost[]>>;
+  scopeCategories: ScopeCategory[];
+  setScopeCategories: React.Dispatch<React.SetStateAction<ScopeCategory[]>>;
+}
+
+const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeData, setHomeData, scopePosts, setScopePosts, scopeCategories, setScopeCategories }) => {
+  const [activeTab, setActiveTab] = useState<'home' | 'members_mgmt' | 'posts_mgmt'>('home');
+  const [homeSubTab, setHomeSubTab] = useState<string>('brand');
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  
+  // 포스트 작성을 위한 상태
+  const [newPost, setNewPost] = useState<Partial<ScopePost>>({
+    category: '',
+    title: '',
+    content: '',
+    imageUrl: null
+  });
+
+  // 홈페이지 내부 섹션들
+  const allSubTabs = [
+    { id: 'brand', label: '브랜드', icon: Command, isSection: false },
+    { id: 'hero', label: '히어로', icon: Monitor, isSection: true },
+    { id: 'logos', label: '로고관리', icon: LayoutGrid, isSection: true },
+    { id: 'about', label: '소개', icon: Info, isSection: true },
+    { id: 'scope', label: '업무범위', icon: Briefcase, isSection: true },
+    { id: 'testimonials', label: '리뷰', icon: Users, isSection: true },
+    { id: 'cta', label: 'CTA', icon: MousePointerClick, isSection: true },
+    { id: 'contact', label: '컨택트', icon: Mail, isSection: true },
+    { id: 'footer_info', label: '푸터', icon: Footprints, isSection: true },
+    { id: 'mgmt', label: 'UI 문구', icon: Settings, isSection: false }
+  ];
+
+  const [displayTabs, setDisplayTabs] = useState(() => {
+    const order = homeData.sectionOrder || [];
+    const sections = allSubTabs.filter(t => t.isSection);
+    const nonSections = allSubTabs.filter(t => !t.isSection);
+    const sortedSections = [...sections].sort((a, b) => {
+      const aIdx = order.indexOf(a.id);
+      const bIdx = order.indexOf(b.id);
+      if (aIdx === -1 && bIdx === -1) return 0;
+      if (aIdx === -1) return 1;
+      if (bIdx === -1) return -1;
+      return aIdx - bIdx;
+    });
+    return [
+      ...nonSections.filter(t => t.id === 'brand'), 
+      ...sortedSections, 
+      ...nonSections.filter(t => t.id === 'mgmt')
+    ];
+  });
+
+  const onDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedItemIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+  const onDragOver = (e: React.DragEvent) => e.preventDefault();
+  const onDrop = (e: React.DragEvent, targetIndex: number) => {
+    if (draggedItemIndex === null) return;
+    const newList = [...displayTabs];
+    const [movedItem] = newList.splice(draggedItemIndex, 1);
+    newList.splice(targetIndex, 0, movedItem);
+    setDisplayTabs(newList);
+    const newSectionOrder = newList.filter(t => t.isSection).map(t => t.id);
+    setHomeData(prev => ({ ...prev, sectionOrder: newSectionOrder }));
+    setDraggedItemIndex(null);
+  };
+
+  const handleImgUpload = (setter: (val: string | null) => void, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setter(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const updateHomeData = (updates: Partial<HomeData>) => setHomeData(prev => ({ ...prev, ...updates }));
+
+  const handleSavePost = () => {
+    const categoryId = newPost.category || (scopeCategories.length > 0 ? scopeCategories[0].id : '');
+    if (!newPost.title || !newPost.content || !categoryId) {
+      alert('제목, 내용, 카테고리를 확인해주세요.');
+      return;
+    }
+    const post: ScopePost = {
+      id: `sp_${Date.now()}`,
+      category: categoryId,
+      title: newPost.title as string,
+      content: newPost.content as string,
+      imageUrl: newPost.imageUrl || null,
+      createdAt: new Date().toISOString(),
+    };
+    setScopePosts([post, ...scopePosts]);
+    setNewPost({ category: categoryId, title: '', content: '', imageUrl: null });
+    alert('포스트가 추가되었습니다.');
+  };
+
+  const deletePost = (postId: string) => {
+    if (window.confirm('이 포스트를 삭제하시겠습니까?')) {
+      setScopePosts(prev => prev.filter(p => p.id !== postId));
+    }
+  };
+
+  const tags = homeData.aboutTags.split(',').map(t => t.trim()).filter(Boolean);
+
+  const renderEditor = () => {
+    switch(homeSubTab) {
+      case 'brand':
+        return (
+          <div className="space-y-6">
+            <label className="text-[10px] font-black opacity-30 uppercase tracking-widest">메인 로고 이미지</label>
+            <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-10 text-center cursor-pointer hover:bg-white/10 transition-all">
+              {homeData.logoImage ? <img src={homeData.logoImage} className="max-h-16 mx-auto" /> : <ImageIcon className="mx-auto opacity-20" size={32}/>}
+              <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ logoImage: img }), e)} />
+            </label>
+          </div>
+        );
+      case 'hero':
+        return (
+          <div className="space-y-6">
+            <div><label className="text-[10px] font-black opacity-30">태그</label><input value={homeData.heroSmallTag} onChange={e => updateHomeData({ heroSmallTag: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-sm font-bold" /></div>
+            <div><label className="text-[10px] font-black opacity-30">메인 타이틀</label><textarea value={homeData.mainTitle} onChange={e => updateHomeData({ mainTitle: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-sm font-black italic h-24" /></div>
+            <div><label className="text-[10px] font-black opacity-30">설명 문구</label><textarea value={homeData.description} onChange={e => updateHomeData({ description: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-24" /></div>
+          </div>
+        );
+      case 'logos':
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center"><label className="text-[10px] font-black opacity-30 uppercase">파트너 로고 리스트</label>
+            <label className="bg-white text-black px-3 py-1 text-[10px] font-black cursor-pointer uppercase">Upload<input type="file" className="hidden" onChange={e => {
+              const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => updateHomeData({ partnerLogos: [...homeData.partnerLogos, ev.target?.result as string] }); r.readAsDataURL(file);
+            }} /></label></div>
+            <div className="grid grid-cols-3 gap-3">
+              {homeData.partnerLogos.map((l, i) => (
+                <div key={i} className="relative group border border-white/10 p-2 bg-white/5 aspect-square flex items-center justify-center">
+                  <img src={l} className="max-h-full max-w-full grayscale" />
+                  <button onClick={() => updateHomeData({ partnerLogos: homeData.partnerLogos.filter((_, idx) => idx !== i) })} className="absolute -top-2 -right-2 bg-red-600 p-1 rounded-full"><X size={10}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'about':
+        return (
+          <div className="space-y-6">
+            <div><label className="text-[10px] font-black opacity-30">섹션 태그</label><input value={homeData.aboutSmallTag} onChange={e => updateHomeData({ aboutSmallTag: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs font-bold" /></div>
+            <div><label className="text-[10px] font-black opacity-30">타이틀</label><textarea value={homeData.aboutTitle} onChange={e => updateHomeData({ aboutTitle: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-sm font-black h-20" /></div>
+            <div><label className="text-[10px] font-black opacity-30">설명</label><textarea value={homeData.aboutDescription} onChange={e => updateHomeData({ aboutDescription: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-32" /></div>
+            <div><label className="text-[10px] font-black opacity-30">태그 (쉼표 구분)</label><input value={homeData.aboutTags} onChange={e => updateHomeData({ aboutTags: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-[11px]" /></div>
+            <div><label className="text-[10px] font-black opacity-30">소개 카드 문구 (흰색 박스)</label><textarea value={homeData.aboutCardText} onChange={e => updateHomeData({ aboutCardText: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-24" /></div>
+            <div>
+              <label className="text-[10px] font-black opacity-30 uppercase">소개 이미지</label>
+              <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-8 text-center cursor-pointer hover:bg-white/10 mt-2">
+                {homeData.aboutImage ? <img src={homeData.aboutImage} className="max-h-24 mx-auto" /> : <ImageIcon className="mx-auto opacity-20" />}
+                <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ aboutImage: img }), e)} />
+              </label>
+            </div>
+          </div>
+        );
+      case 'scope':
+        return (
+          <div className="space-y-10">
+            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <label className="text-[10px] font-black opacity-30 uppercase">업무 카테고리 설정</label>
+              <button 
+                onClick={() => setScopeCategories([...scopeCategories, { id: `cat_${Date.now()}`, title: '새 카테고리', desc: '설명을 입력하세요' }])}
+                className="bg-white text-black px-3 py-1 text-[10px] font-black flex items-center gap-1.5"
+              >
+                <Plus size={12}/> ADD_CATEGORY
+              </button>
+            </div>
+            
+            <div className="space-y-8">
+              {scopeCategories.map((c, i) => (
+                <div key={c.id} className="p-5 bg-white/5 border border-white/10 relative group space-y-4">
+                  <button onClick={() => setScopeCategories(scopeCategories.filter(x => x.id !== c.id))} className="absolute top-2 right-2 text-red-500 opacity-20 group-hover:opacity-100 transition-all"><Trash2 size={14}/></button>
+                  <div>
+                    <label className="text-[9px] font-black opacity-20 uppercase block mb-1">카테고리명</label>
+                    <input 
+                      value={c.title} 
+                      onChange={e => {
+                        const newList = [...scopeCategories];
+                        newList[i].title = e.target.value;
+                        setScopeCategories(newList);
+                      }} 
+                      className="w-full bg-transparent border-b border-white/10 text-[12px] font-black outline-none focus:border-white transition-all" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black opacity-20 uppercase block mb-1">카테고리 설명</label>
+                    <textarea 
+                      value={c.desc} 
+                      onChange={e => {
+                        const newList = [...scopeCategories];
+                        newList[i].desc = e.target.value;
+                        setScopeCategories(newList);
+                      }} 
+                      className="w-full bg-transparent border-b border-white/10 text-[10px] h-16 outline-none focus:border-white transition-all resize-none" 
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'testimonials':
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center"><label className="text-[10px] font-black opacity-30 uppercase">리뷰 리스트</label><button onClick={() => updateHomeData({ testimonials: [...homeData.testimonials, { name: '이름', role: '직함', text: '리뷰 내용', avatar: null }] })} className="bg-white text-black px-3 py-1 text-[10px] font-black">ADD</button></div>
+            {homeData.testimonials.map((t, i) => (
+              <div key={i} className="p-4 border border-white/10 space-y-3 bg-white/5 relative group">
+                <button onClick={() => updateHomeData({ testimonials: homeData.testimonials.filter((_, idx) => idx !== i) })} className="absolute top-2 right-2 text-red-500 opacity-20 group-hover:opacity-100"><Trash2 size={14}/></button>
+                <input value={t.name} onChange={e => { const list = [...homeData.testimonials]; list[i].name = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/10 text-[11px] font-black" placeholder="성함" />
+                <input value={t.role} onChange={e => { const list = [...homeData.testimonials]; list[i].role = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/10 text-[10px] opacity-40 font-bold" placeholder="직함" />
+                <textarea value={t.text} onChange={e => { const list = [...homeData.testimonials]; list[i].text = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/10 text-[10px] h-16" placeholder="리뷰 내용" />
+              </div>
+            ))}
+          </div>
+        );
+      case 'cta':
+        return (
+          <div className="space-y-6">
+            <div><label className="text-[10px] font-black opacity-30">CTA 타이틀</label><textarea value={homeData.ctaTitle} onChange={e => updateHomeData({ ctaTitle: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-sm font-black h-24" /></div>
+            <div><label className="text-[10px] font-black opacity-30">CTA 하단 태그</label><input value={homeData.ctaTag} onChange={e => updateHomeData({ ctaTag: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-[10px] font-bold" /></div>
+            <div><label className="text-[10px] font-black opacity-30">배경 비디오 URL (MP4)</label><input value={homeData.ctaVideo || ''} onChange={e => updateHomeData({ ctaVideo: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-[10px]" /></div>
+          </div>
+        );
+      case 'contact':
+        return (
+          <div className="space-y-6">
+            <div><label className="text-[10px] font-black opacity-30">섹션 타이틀</label><input value={homeData.contactTitle} onChange={e => updateHomeData({ contactTitle: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 font-black" /></div>
+            <div><label className="text-[10px] font-black opacity-30">설명</label><textarea value={homeData.contactDescription} onChange={e => updateHomeData({ contactDescription: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-20" /></div>
+            <div><label className="text-[10px] font-black opacity-30">이메일</label><input value={homeData.contactEmail} onChange={e => updateHomeData({ contactEmail: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2" /></div>
+            <div><label className="text-[10px] font-black opacity-30">전화번호</label><input value={homeData.contactPhone} onChange={e => updateHomeData({ contactPhone: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2" /></div>
+          </div>
+        );
+      case 'footer_info':
+        return (
+          <div className="space-y-10">
+            <div><label className="text-[10px] font-black opacity-30">푸터 정보 텍스트</label><textarea value={homeData.footerInfo} onChange={e => updateHomeData({ footerInfo: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-32" /></div>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center"><label className="text-[10px] font-black opacity-30 uppercase">Quick Links</label><button onClick={() => updateHomeData({ footerQuickLinks: [...homeData.footerQuickLinks, { label: '새 링크', target: 'home' }] })} className="bg-white text-black px-2 py-0.5 text-[8px] font-black">ADD</button></div>
+              {homeData.footerQuickLinks.map((link, i) => (
+                <div key={i} className="flex gap-2 items-center bg-white/5 p-2 border border-white/10 group">
+                  <input value={link.label} onChange={e => { const list = [...homeData.footerQuickLinks]; list[i].label = e.target.value; updateHomeData({ footerQuickLinks: list }); }} className="flex-1 bg-transparent text-[10px] font-bold border-b border-white/20" />
+                  <button onClick={() => updateHomeData({ footerQuickLinks: homeData.footerQuickLinks.filter((_, idx) => idx !== i) })} className="text-red-500 opacity-20 group-hover:opacity-100"><Trash2 size={12}/></button>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-between items-center"><label className="text-[10px] font-black opacity-30 uppercase">Explore Links</label><button onClick={() => updateHomeData({ footerExploreLinks: [...homeData.footerExploreLinks, { label: '새 탐색', target: 'scope' }] })} className="bg-white text-black px-2 py-0.5 text-[8px] font-black">ADD</button></div>
+              {homeData.footerExploreLinks.map((link, i) => (
+                <div key={i} className="flex gap-2 items-center bg-white/5 p-2 border border-white/10 group">
+                  <input value={link.label} onChange={e => { const list = [...homeData.footerExploreLinks]; list[i].label = e.target.value; updateHomeData({ footerExploreLinks: list }); }} className="flex-1 bg-transparent text-[10px] font-bold border-b border-white/20" />
+                  <button onClick={() => updateHomeData({ footerExploreLinks: homeData.footerExploreLinks.filter((_, idx) => idx !== i) })} className="text-red-500 opacity-20 group-hover:opacity-100"><Trash2 size={12}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'mgmt':
+        return (
+          <div className="space-y-6">
+            <div><label className="text-[10px] font-black opacity-30">로그인 버튼 문구</label><input value={homeData.loginButtonText} onChange={e => updateHomeData({ loginButtonText: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs font-bold" /></div>
+            <div><label className="text-[10px] font-black opacity-30">시스템 상태 문구</label><input value={homeData.systemStatusText} onChange={e => updateHomeData({ systemStatusText: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs font-bold" /></div>
+          </div>
+        );
+      default: return null;
+    }
+  };
+
+  const renderPreview = () => {
+    switch(homeSubTab) {
+      case 'brand':
+        return (
+          <div className="flex flex-col items-center justify-center min-h-[400px]">
+            {homeData.logoImage ? <img src={homeData.logoImage} className="max-h-24 object-contain" /> : <div className="bg-white px-10 py-5 brutal-border"><h1 className="editorial-title text-5xl text-black">NEXTO</h1></div>}
+          </div>
+        );
+      case 'hero':
+        return (
+          <div className="w-full text-left space-y-8 max-w-2xl mx-auto py-20">
+            <span className="text-[11px] font-black tracking-[0.4em] uppercase opacity-40 border-l-2 border-white pl-4">{homeData.heroSmallTag}</span>
+            <h2 className="editorial-title text-7xl italic leading-none neo-gradient-text whitespace-pre-line">{homeData.mainTitle}</h2>
+            <p className="text-lg opacity-40 leading-relaxed">{homeData.description}</p>
+          </div>
+        );
+      case 'about':
+        return (
+          <div className="grid grid-cols-2 gap-12 items-center text-left max-w-4xl mx-auto py-12 relative">
+            <div className="relative aspect-[4/5] bg-white/5 brutal-border overflow-hidden">
+              {homeData.aboutImage ? <img src={homeData.aboutImage} className="w-full h-full object-cover grayscale opacity-30" /> : <div className="w-full h-full bg-white/5 flex items-center justify-center"><ImageIcon size={48} className="opacity-10"/></div>}
+              <div className="absolute -bottom-6 -right-6 bg-white text-black p-8 rounded-2xl brutal-shadow z-20">
+                <p className="text-[11px] font-bold leading-tight max-w-[140px]">{homeData.aboutCardText}</p>
+              </div>
+            </div>
+            <div className="space-y-6">
+               <span className="text-[10px] font-bold tracking-[0.4em] uppercase opacity-40">{homeData.aboutSmallTag}</span>
+               <h2 className="editorial-title text-5xl italic leading-none whitespace-pre-line">{homeData.aboutTitle}</h2>
+               <div className="flex flex-wrap gap-2">{tags.map((t, i) => <span key={i} className="px-3 py-1 border border-white/20 text-[9px] font-black uppercase rounded-full">{t}</span>)}</div>
+               <p className="text-sm opacity-40 leading-relaxed whitespace-pre-line">{homeData.aboutDescription}</p>
+            </div>
+          </div>
+        );
+      case 'logos':
+        return (
+          <div className="flex flex-col items-center gap-12 py-20">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.6em] opacity-30">NEXTO_PARTNERS</h3>
+            <div className="flex flex-wrap justify-center gap-12 opacity-30 grayscale max-w-3xl">
+              {homeData.partnerLogos?.map((l, i) => <img key={i} src={l} className="h-8" />)}
+              {homeData.partnerLogos.length === 0 && <span className="text-[10px] font-black border border-white/10 px-4 py-2">NO_LOGOS_YET</span>}
+            </div>
+          </div>
+        );
+      case 'scope':
+        return (
+          <div className="w-full grid grid-cols-2 gap-px bg-white/10 border border-white/10 max-w-4xl mx-auto py-20">
+            {scopeCategories.map(s => (
+              <div key={s.id} className="bg-black p-12 space-y-4 text-left">
+                 <Database size={24} className="opacity-20" />
+                 <h4 className="text-xl font-black italic uppercase tracking-tighter">{s.title}</h4>
+                 <p className="text-[11px] opacity-40 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        );
+      case 'testimonials':
+        return (
+          <div className="w-full space-y-6 flex flex-col items-center max-w-2xl mx-auto py-20">
+            {homeData.testimonials.map((t, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 p-10 w-full text-left flex justify-between items-center group">
+                <div className="space-y-4">
+                  <p className="text-sm italic opacity-60 leading-relaxed">"{t.text}"</p>
+                  <div><p className="font-bold text-sm">{t.name}</p><p className="text-[10px] opacity-30 uppercase">{t.role}</p></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      case 'cta':
+        return (
+          <div className="w-full text-center space-y-12 max-w-3xl mx-auto py-24 relative overflow-hidden rounded-[3rem] bg-black border border-white/10">
+            {homeData.ctaVideo && <video src={homeData.ctaVideo} autoPlay loop muted className="absolute inset-0 w-full h-full object-cover opacity-20" />}
+            <div className="relative z-10 space-y-8">
+              <h2 className="editorial-title text-6xl italic leading-none uppercase whitespace-pre-line">{homeData.ctaTitle}</h2>
+              <div className="flex justify-center"><button className="w-20 h-20 rounded-full border-2 border-white/30 flex items-center justify-center"><Play size={28} fill="currentColor" /></button></div>
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-40">{homeData.ctaTag}</p>
+            </div>
+          </div>
+        );
+      case 'contact':
+        return (
+          <div className="w-full max-w-2xl text-left bg-white/5 p-16 brutal-border space-y-10 mx-auto py-20">
+             <h2 className="editorial-title text-5xl italic whitespace-pre-line">{homeData.contactTitle}</h2>
+             <p className="text-lg opacity-40 leading-relaxed">{homeData.contactDescription}</p>
+             <div className="space-y-4 opacity-60 pt-6">
+                <div className="flex items-center gap-4"><Mail size={16}/> {homeData.contactEmail}</div>
+                <div className="flex items-center gap-4"><Smartphone size={16}/> {homeData.contactPhone}</div>
+             </div>
+          </div>
+        );
+      case 'footer_info':
+        return (
+          <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-8 text-left py-12 px-4">
+            <div className="space-y-4">
+              <h4 className="text-[9px] font-black uppercase tracking-widest border-b border-white/10 pb-2">Quick Links</h4>
+              <ul className="space-y-1.5 opacity-40 text-[10px] font-bold">
+                {homeData.footerQuickLinks.map((l, i) => <li key={i}>{l.label}</li>)}
+              </ul>
+            </div>
+            <div className="space-y-4">
+              <h4 className="text-[9px] font-black uppercase tracking-widest border-b border-white/10 pb-2">Explore</h4>
+              <ul className="space-y-1.5 opacity-40 text-[10px] font-bold">
+                {homeData.footerExploreLinks.map((l, i) => <li key={i}>{l.label}</li>)}
+              </ul>
+            </div>
+            <div className="col-span-2 space-y-4">
+              <h4 className="text-[9px] font-black uppercase tracking-widest border-b border-white/10 pb-2">Company Info</h4>
+              <p className="text-[10px] opacity-40 leading-relaxed font-medium">{homeData.footerInfo}</p>
+              <div className="flex gap-4 opacity-30"><Globe size={14}/><MessageSquare size={14}/></div>
+            </div>
+          </div>
+        );
+      case 'mgmt':
+        return (
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-8 py-20">
+            <button className="bg-white text-black px-10 py-4 font-black text-xs uppercase tracking-widest">{homeData.loginButtonText}</button>
+            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] opacity-30">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              {homeData.systemStatusText}
+            </div>
+          </div>
+        );
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in text-white">
+      {/* 1. 좌측 메인 관리 메뉴 */}
+      <div className="lg:col-span-4 space-y-8">
+        <div className="bg-black p-8 brutal-border">
+          <div className="grid grid-cols-1 gap-4">
+            <button onClick={() => setActiveTab('home')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'home' ? 'bg-white text-black border-white' : 'bg-transparent border-white/20 opacity-40 hover:opacity-100'}`}><LayoutGrid size={18} /> 홈페이지 섹션</button>
+            <button onClick={() => setActiveTab('members_mgmt')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'members_mgmt' ? 'bg-white text-black border-white' : 'bg-transparent border-white/20 opacity-40 hover:opacity-100'}`}><Users size={18} /> 팀원 관리</button>
+            <button onClick={() => setActiveTab('posts_mgmt')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'posts_mgmt' ? 'bg-white text-black border-white' : 'bg-transparent border-white/20 opacity-40 hover:opacity-100'}`}><BookOpen size={18} /> 포스트 관리</button>
+          </div>
+        </div>
+
+        {/* 하위 편집 도구 영역 */}
+        <div className="max-h-[65vh] overflow-y-auto custom-scrollbar pr-2 space-y-8">
+          {activeTab === 'home' && (
+            <div className="bg-black p-8 brutal-border space-y-8">
+              <div className="grid grid-cols-2 gap-2">
+                {displayTabs.map((t, idx) => (
+                  <div key={t.id} draggable onDragStart={(e) => onDragStart(e, idx)} onDragOver={onDragOver} onDrop={(e) => onDrop(e, idx)} className={`flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest border-2 cursor-move transition-all ${homeSubTab === t.id ? 'bg-white text-black border-white' : 'border-white/10 opacity-60 hover:opacity-100'}`}>
+                    <div onClick={() => setHomeSubTab(t.id)} className="flex items-center gap-2 w-full"><GripVertical size={14} className="opacity-20" /><t.icon size={14} /> {t.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-8 border-t border-white/10">
+                {renderEditor()}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'members_mgmt' && (
+            <div className="bg-black p-8 brutal-border space-y-12">
+              {/* 팀 페이지 전체 문구 설정 */}
+              <div className="space-y-6">
+                <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-white/10 pb-4">팀 페이지 공통 문구 설정</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[9px] font-black opacity-30 block mb-1">메인 타이틀</label>
+                    <textarea 
+                      value={homeData.teamHeroTitle} 
+                      onChange={e => updateHomeData({ teamHeroTitle: e.target.value })}
+                      className="w-full bg-transparent border-b border-white/10 text-[12px] font-black h-20 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black opacity-30 block mb-1">설명 문구</label>
+                    <textarea 
+                      value={homeData.teamHeroDescription} 
+                      onChange={e => updateHomeData({ teamHeroDescription: e.target.value })}
+                      className="w-full bg-transparent border-b border-white/10 text-[10px] h-24 outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 개별 멤버 리스트 */}
+              <div className="space-y-8">
+                <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                  <h3 className="text-[11px] font-black uppercase tracking-widest">TEAM_MEMBERS 리스트</h3>
+                  <button 
+                    onClick={() => setHomeData(prev => ({ ...prev, members: [...prev.members, { id: `m_${Date.now()}`, name: '새 멤버', role: '직함', bio: '소개글', image: null }] }))}
+                    className="bg-white text-black px-3 py-1 text-[10px] font-black"
+                  >
+                    ADD_MEMBER
+                  </button>
+                </div>
+                <div className="space-y-6">
+                  {homeData.members.map((m, i) => (
+                    <div key={m.id} className="p-4 bg-white/5 border border-white/10 group relative space-y-4">
+                      <button onClick={() => setHomeData(prev => ({ ...prev, members: prev.members.filter(x => x.id !== m.id) }))} className="absolute top-2 right-2 text-red-500 opacity-20 group-hover:opacity-100 transition-all"><Trash2 size={14}/></button>
+                      <input 
+                        value={m.name} 
+                        onChange={e => {
+                          const newList = [...homeData.members];
+                          newList[i].name = e.target.value;
+                          updateHomeData({ members: newList });
+                        }}
+                        className="w-full bg-transparent border-b border-white/10 text-[12px] font-black"
+                        placeholder="이름"
+                      />
+                      <input 
+                        value={m.role} 
+                        onChange={e => {
+                          const newList = [...homeData.members];
+                          newList[i].role = e.target.value;
+                          updateHomeData({ members: newList });
+                        }}
+                        className="w-full bg-transparent border-b border-white/10 text-[10px] opacity-40 font-bold"
+                        placeholder="직함"
+                      />
+                      <textarea 
+                        value={m.bio} 
+                        onChange={e => {
+                          const newList = [...homeData.members];
+                          newList[i].bio = e.target.value;
+                          updateHomeData({ members: newList });
+                        }}
+                        className="w-full bg-transparent border-b border-white/10 text-[10px] h-16 resize-none"
+                        placeholder="소개글"
+                      />
+                      <div>
+                        <label className="text-[9px] font-black opacity-30 block mb-1">멤버 이미지</label>
+                        <input type="file" className="text-[9px]" onChange={e => handleImgUpload(img => {
+                           const newList = [...homeData.members];
+                           newList[i].image = img;
+                           updateHomeData({ members: newList });
+                        }, e)} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'posts_mgmt' && (
+            <div className="space-y-10">
+              <div className="bg-black p-8 brutal-border space-y-6">
+                 <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-white/10 pb-4">새 포스트 작성</h3>
+                 <div className="space-y-4">
+                   <div>
+                     <label className="text-[9px] font-black opacity-30 block mb-1">카테고리 선택</label>
+                     <select 
+                       value={newPost.category} 
+                       onChange={e => setNewPost({...newPost, category: e.target.value})}
+                       className="w-full bg-black border border-white/20 p-3 text-[11px] font-bold outline-none text-white"
+                     >
+                       <option value="">카테고리를 선택하세요</option>
+                       {scopeCategories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                     </select>
+                   </div>
+                   <input 
+                     placeholder="포스트 제목"
+                     value={newPost.title}
+                     onChange={e => setNewPost({...newPost, title: e.target.value})}
+                     className="w-full bg-transparent border-b border-white/20 py-2 text-xs font-bold"
+                   />
+                   <textarea 
+                     placeholder="포스트 내용"
+                     value={newPost.content}
+                     onChange={e => setNewPost({...newPost, content: e.target.value})}
+                     className="w-full bg-transparent border-b border-white/20 py-2 text-xs h-32"
+                   />
+                   <div className="space-y-2">
+                     <label className="block text-[9px] font-black opacity-30">이미지 첨부</label>
+                     <input type="file" className="text-[10px]" onChange={e => handleImgUpload(img => setNewPost({...newPost, imageUrl: img}), e)} />
+                   </div>
+                   <button onClick={handleSavePost} className="w-full bg-white text-black py-4 font-black text-xs uppercase tracking-widest hover:bg-neutral-200">
+                     포스트 저장
+                   </button>
+                 </div>
+              </div>
+
+              <div className="bg-black p-8 brutal-border space-y-6">
+                 <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-white/10 pb-4">등록된 포스트 목록</h3>
+                 <div className="space-y-3">
+                   {scopePosts.map(p => {
+                     const cat = scopeCategories.find(c => c.id === p.category);
+                     return (
+                       <div key={p.id} className="flex justify-between items-center p-4 bg-white/5 border border-white/5 group hover:border-white/20 transition-all">
+                         <div className="truncate">
+                           <p className="text-[8px] font-black opacity-30 uppercase mb-1">{cat?.title || 'Unknown'}</p>
+                           <span className="text-[11px] font-bold italic">{p.title}</span>
+                         </div>
+                         <button onClick={() => deletePost(p.id)} className="text-red-500 opacity-20 group-hover:opacity-100 transition-all">
+                           <Trash2 size={14} />
+                         </button>
+                       </div>
+                     );
+                   })}
+                   {scopePosts.length === 0 && <p className="text-center py-10 text-[10px] opacity-20 italic">등록된 포스트가 없습니다.</p>}
+                 </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 2. 우측 실시간 미리보기 */}
+      <div className="lg:col-span-8 space-y-10">
+        <div className="bg-black border-2 border-white brutal-shadow min-h-[750px] p-12 overflow-y-auto max-h-[85vh] custom-scrollbar">
+          <div className="border-b border-white/10 pb-6 mb-12 flex justify-between items-center">
+             <h3 className="editorial-title text-4xl italic uppercase">
+               PREVIEW: {activeTab === 'home' ? homeSubTab : activeTab === 'members_mgmt' ? 'TEAM_PAGE' : 'POSTS'}
+             </h3>
+             <span className="text-[10px] font-black opacity-20 uppercase tracking-[0.4em]">Live Visualizer</span>
+          </div>
+
+          <div className="animate-fade-in text-center p-16 border border-white/5 bg-white/5 min-h-[550px] rounded-[3rem] flex flex-col items-center justify-center relative overflow-hidden">
+             {activeTab === 'home' ? renderPreview() : activeTab === 'members_mgmt' ? (
+                <div className="w-full scale-[0.6] origin-top">
+                  <TeamView data={homeData} onBack={() => {}} />
+                </div>
+             ) : (
+               <div className="py-20 opacity-20 italic space-y-4">
+                 <div className="flex justify-center"><BookOpen size={48}/></div>
+                 <p className="text-[12px] font-black uppercase tracking-widest">
+                   Post management mode is currently focused on indexing.
+                 </p>
+               </div>
+             )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HomepageManagementView;

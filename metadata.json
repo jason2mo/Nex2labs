@@ -1,0 +1,7 @@
+{
+  "name": "NexTo Labs v6.1 Local DB",
+  "description": "A high-performance local-first e-commerce and inventory management system for NexTo Labs, featuring admin and customer interfaces with persistent storage.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
