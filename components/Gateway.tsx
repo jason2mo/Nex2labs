@@ -4,13 +4,14 @@ import { MASTER_ADMIN_CODE, HARSH_MESSAGES } from '../constants';
 import { Customer, Admin, Session } from '../types';
 
 interface GatewayProps {
+  brandName: string;
   logo?: string | null;
   customers: Customer[];
   admins: Admin[];
   onLogin: (session: Session) => void;
 }
 
-const Gateway: React.FC<GatewayProps> = ({ logo, customers, admins, onLogin }) => {
+const Gateway: React.FC<GatewayProps> = ({ brandName, logo, customers, admins, onLogin }) => {
   const [code, setCode] = useState('');
   const [err, setErr] = useState('');
 
@@ -44,10 +45,10 @@ const Gateway: React.FC<GatewayProps> = ({ logo, customers, admins, onLogin }) =
         <div className="text-center flex flex-col items-center">
           <div className="px-10 py-5 transition-all">
             {logo ? (
-              <img src={logo} className="max-h-24 mx-auto object-contain" alt="NEXTO" />
+              <img src={logo} className="max-h-24 mx-auto object-contain" alt={brandName} />
             ) : (
               <div className="bg-white px-10 py-5 brutal-border shadow-[10px_10px_0_0_white]">
-                <h1 className="editorial-title text-5xl leading-none text-black tracking-tighter">NEXTO</h1>
+                <h1 className="editorial-title text-5xl leading-none text-black tracking-tighter uppercase">{brandName}</h1>
               </div>
             )}
           </div>

@@ -37,6 +37,11 @@ const App: React.FC = () => {
   // 알림 계산
   const unreadInquiriesCount = inquiries.filter(i => !i.isRead).length;
 
+  // 타이틀 업데이트
+  useEffect(() => {
+    document.title = `${homeData.brandName} | 시스템`;
+  }, [homeData.brandName]);
+
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -182,7 +187,7 @@ const App: React.FC = () => {
       case 'home': return <HomeView {...commonProps} />;
       case 'scope_detail': return <ScopeDetailView categories={scopeCategories} categoryId={selectedCategory} posts={scopePosts} onBack={() => handleNavigate('home')} />;
       case 'team': return <TeamView data={homeData} onBack={() => handleNavigate('home')} />;
-      case 'login': return <Gateway logo={homeData.logoImage} customers={customers} admins={admins} onLogin={handleLogin} />;
+      case 'login': return <Gateway brandName={homeData.brandName} logo={homeData.logoImage} customers={customers} admins={admins} onLogin={handleLogin} />;
       case 'dashboard': 
         return session?.type === 'admin' ? (
           <AdminView 
@@ -215,7 +220,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black flex flex-col font-sans selection:bg-white selection:text-black text-white">
-      {!isAppReady && <LoadingOverlay />}
+      {!isAppReady && <LoadingOverlay brandName={homeData.brandName} />}
       
       <nav className="bg-black border-b-2 border-white sticky top-0 z-50 px-10 h-24 flex justify-between items-center">
         <div className="flex items-center gap-12 h-full">
@@ -225,10 +230,10 @@ const App: React.FC = () => {
             className="px-2 py-2 group hover:opacity-70 transition-all"
           >
              {homeData.logoImage ? (
-               <img src={homeData.logoImage} className="h-10 object-contain" alt="NEXTO" />
+               <img src={homeData.logoImage} className="h-10 object-contain" alt={homeData.brandName} />
              ) : (
                <div className="bg-white px-5 py-2 brutal-border shadow-sm group-hover:bg-neutral-200">
-                  <h1 className="editorial-title text-xl leading-none text-black tracking-tighter transition-all">NEXTO</h1>
+                  <h1 className="editorial-title text-xl leading-none text-black tracking-tighter transition-all uppercase">{homeData.brandName}</h1>
                </div>
              )}
           </button>
@@ -357,7 +362,7 @@ const App: React.FC = () => {
            </span>
         </div>
         <div className="hidden sm:block opacity-30 tracking-[0.2em]">
-          NEXTO_LABS // © 2024 // LOCAL_DATABASE_SYNC
+          {homeData.brandName.toUpperCase()}_LABS // © 2024 // LOCAL_DATABASE_SYNC
         </div>
       </footer>
     </div>

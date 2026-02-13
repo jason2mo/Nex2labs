@@ -29,6 +29,7 @@ export const DEFAULT_SCOPE_CATEGORIES = [
 ];
 
 export const DEFAULT_HOME_DATA = {
+  brandName: "NEXTO",
   logoImage: null,
   heroSmallTag: "Futuristic Infrastructure",
   mainTitle: "NEW DIGITAL\nUNIVERSE",

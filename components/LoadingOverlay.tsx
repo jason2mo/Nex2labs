@@ -1,12 +1,15 @@
 
 import React from 'react';
-import { Database } from 'lucide-react';
 
-const LoadingOverlay: React.FC = () => {
+interface LoadingOverlayProps {
+  brandName?: string;
+}
+
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ brandName = "NexTo Labs" }) => {
   return (
     <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-white">
       <div className="mb-8">
-        <h1 className="text-4xl font-black tracking-tighter italic">NexTo Labs.</h1>
+        <h1 className="text-4xl font-black tracking-tighter italic">{brandName}.</h1>
       </div>
       <div className="w-12 h-[1px] bg-white/20 relative overflow-hidden">
         <div className="absolute inset-0 bg-white animate-[loading_1.5s_infinite_ease-in-out]"></div>

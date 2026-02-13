@@ -116,12 +116,25 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     switch(homeSubTab) {
       case 'brand':
         return (
-          <div className="space-y-6">
-            <label className="text-[10px] font-black opacity-30 uppercase tracking-widest">메인 로고 이미지</label>
-            <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-10 text-center cursor-pointer hover:bg-white/10 transition-all">
-              {homeData.logoImage ? <img src={homeData.logoImage} className="max-h-16 mx-auto" /> : <ImageIcon className="mx-auto opacity-20" size={32}/>}
-              <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ logoImage: img }), e)} />
-            </label>
+          <div className="space-y-10">
+            <div>
+              <label className="text-[10px] font-black opacity-30 uppercase tracking-widest block mb-2">브랜드 이름 (사이트 전체 적용)</label>
+              <input 
+                value={homeData.brandName} 
+                onChange={e => updateHomeData({ brandName: e.target.value.toUpperCase() })} 
+                className="w-full bg-transparent border-b-2 border-white/20 p-3 text-lg font-black outline-none focus:border-white transition-all" 
+                placeholder="NEXTO"
+              />
+              <p className="text-[9px] opacity-20 mt-2">* 내비게이션, 로딩 화면, 로고 텍스트에 즉시 반영됩니다.</p>
+            </div>
+
+            <div className="pt-6">
+              <label className="text-[10px] font-black opacity-30 uppercase tracking-widest block mb-2">메인 로고 이미지 (업로드 시 텍스트 대체)</label>
+              <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-10 text-center cursor-pointer hover:bg-white/10 transition-all">
+                {homeData.logoImage ? <img src={homeData.logoImage} className="max-h-16 mx-auto" alt="Logo" /> : <ImageIcon className="mx-auto opacity-20" size={32}/>}
+                <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ logoImage: img }), e)} />
+              </label>
+            </div>
           </div>
         );
       case 'hero':
@@ -142,7 +155,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             <div className="grid grid-cols-3 gap-3">
               {homeData.partnerLogos.map((l, i) => (
                 <div key={i} className="relative group border border-white/10 p-2 bg-white/5 aspect-square flex items-center justify-center">
-                  <img src={l} className="max-h-full max-w-full grayscale" />
+                  <img src={l} className="max-h-full max-w-full grayscale" alt={`Partner ${i}`} />
                   <button onClick={() => updateHomeData({ partnerLogos: homeData.partnerLogos.filter((_, idx) => idx !== i) })} className="absolute -top-2 -right-2 bg-red-600 p-1 rounded-full"><X size={10}/></button>
                 </div>
               ))}
@@ -160,7 +173,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             <div>
               <label className="text-[10px] font-black opacity-30 uppercase">소개 이미지</label>
               <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-8 text-center cursor-pointer hover:bg-white/10 mt-2">
-                {homeData.aboutImage ? <img src={homeData.aboutImage} className="max-h-24 mx-auto" /> : <ImageIcon className="mx-auto opacity-20" />}
+                {homeData.aboutImage ? <img src={homeData.aboutImage} className="max-h-24 mx-auto" alt="About" /> : <ImageIcon className="mx-auto opacity-20" />}
                 <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ aboutImage: img }), e)} />
               </label>
             </div>
@@ -285,7 +298,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'brand':
         return (
           <div className="flex flex-col items-center justify-center min-h-[400px]">
-            {homeData.logoImage ? <img src={homeData.logoImage} className="max-h-24 object-contain" /> : <div className="bg-white px-10 py-5 brutal-border"><h1 className="editorial-title text-5xl text-black">NEXTO</h1></div>}
+            {homeData.logoImage ? <img src={homeData.logoImage} className="max-h-24 object-contain" alt="Logo" /> : <div className="bg-white px-10 py-5 brutal-border"><h1 className="editorial-title text-5xl text-black uppercase">{homeData.brandName}</h1></div>}
           </div>
         );
       case 'hero':
@@ -300,7 +313,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         return (
           <div className="grid grid-cols-2 gap-12 items-center text-left max-w-4xl mx-auto py-12 relative">
             <div className="relative aspect-[4/5] bg-white/5 brutal-border overflow-hidden">
-              {homeData.aboutImage ? <img src={homeData.aboutImage} className="w-full h-full object-cover grayscale opacity-30" /> : <div className="w-full h-full bg-white/5 flex items-center justify-center"><ImageIcon size={48} className="opacity-10"/></div>}
+              {homeData.aboutImage ? <img src={homeData.aboutImage} className="w-full h-full object-cover grayscale opacity-30" alt="About" /> : <div className="w-full h-full bg-white/5 flex items-center justify-center"><ImageIcon size={48} className="opacity-10"/></div>}
               <div className="absolute -bottom-6 -right-6 bg-white text-black p-8 rounded-2xl brutal-shadow z-20">
                 <p className="text-[11px] font-bold leading-tight max-w-[140px]">{homeData.aboutCardText}</p>
               </div>
@@ -316,9 +329,9 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'logos':
         return (
           <div className="flex flex-col items-center gap-12 py-20">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.6em] opacity-30">NEXTO_PARTNERS</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.6em] opacity-30">{homeData.brandName.toUpperCase()}_PARTNERS</h3>
             <div className="flex flex-wrap justify-center gap-12 opacity-30 grayscale max-w-3xl">
-              {homeData.partnerLogos?.map((l, i) => <img key={i} src={l} className="h-8" />)}
+              {homeData.partnerLogos?.map((l, i) => <img key={i} src={l} className="h-8" alt={`Partner ${i}`} />)}
               {homeData.partnerLogos.length === 0 && <span className="text-[10px] font-black border border-white/10 px-4 py-2">NO_LOGOS_YET</span>}
             </div>
           </div>
