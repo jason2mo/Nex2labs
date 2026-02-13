@@ -13,7 +13,6 @@ import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
 
-// 'team' 뷰 추가
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
 
 const App: React.FC = () => {
@@ -24,7 +23,6 @@ const App: React.FC = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   
-  // 데이터 상태
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -34,15 +32,12 @@ const App: React.FC = () => {
   const [scopeCategories, setScopeCategories] = useState<ScopeCategory[]>(DEFAULT_SCOPE_CATEGORIES);
   const [homeData, setHomeData] = useState<HomeData>(DEFAULT_HOME_DATA);
 
-  // 알림 계산
   const unreadInquiriesCount = inquiries.filter(i => !i.isRead).length;
 
-  // 타이틀 업데이트
   useEffect(() => {
     document.title = `${homeData.brandName} | 시스템`;
   }, [homeData.brandName]);
 
-  // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
@@ -53,7 +48,6 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 초기 로드 및 세션 복구
   useEffect(() => {
     const p = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
     const o = localStorage.getItem(STORAGE_KEYS.ORDERS);
@@ -74,7 +68,7 @@ const App: React.FC = () => {
     if (sc) setScopeCategories(JSON.parse(sc));
     if (hd) {
       const parsedData = JSON.parse(hd);
-      setHomeData({ ...DEFAULT_HOME_DATA, ...parsedData }); // 신규 필드 누락 방지
+      setHomeData({ ...DEFAULT_HOME_DATA, ...parsedData });
     }
     
     if (sess) {
@@ -94,7 +88,6 @@ const App: React.FC = () => {
     setTimeout(() => setIsAppReady(true), 1200);
   }, []);
 
-  // 상태 변경 시 로컬 스토리지 업데이트
   useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products)); }, [products, isAppReady]);
   useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders)); }, [orders, isAppReady]);
   useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers)); }, [customers, isAppReady]);
@@ -114,7 +107,18 @@ const App: React.FC = () => {
     }
   }, [session, isAppReady]);
 
-  // 페이지 이동 처리
+  // 중앙 삭제 처리 함수
+  const handleDeleteItem = useCallback((type: 'products' | 'orders' | 'customers' | 'admins', id: string) => {
+    if (!window.confirm('항목을 삭제하시겠습니까?')) return;
+    
+    switch (type) {
+      case 'products': setProducts(prev => prev.filter(p => String(p.id) !== String(id))); break;
+      case 'orders': setOrders(prev => prev.filter(o => String(o.id) !== String(id))); break;
+      case 'customers': setCustomers(prev => prev.filter(c => String(c.id) !== String(id))); break;
+      case 'admins': setAdmins(prev => prev.filter(a => String(a.id) !== String(id))); break;
+    }
+  }, []);
+
   const handleNavigate = (view: ViewState) => {
     setCurrentView(view);
     setIsProfileMenuOpen(false);
@@ -135,14 +139,12 @@ const App: React.FC = () => {
     setIsProfileMenuOpen(false);
   };
 
-  // 로그인 처리
   const handleLogin = (newSession: Session) => {
     setSession(newSession);
     localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(newSession));
     handleNavigate(newSession.type === 'admin' ? 'dashboard' : 'collection');
   };
 
-  // 로그아웃 처리
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -195,7 +197,8 @@ const App: React.FC = () => {
             orders={orders} setOrders={setOrders} 
             customers={customers} setCustomers={setCustomers} 
             admins={admins} setAdmins={setAdmins} 
-            formatPrice={formatPrice} 
+            formatPrice={formatPrice}
+            onDeleteItem={handleDeleteItem}
           />
         ) : <HomeView {...commonProps} />;
       case 'homepage_mgmt':
@@ -271,7 +274,6 @@ const App: React.FC = () => {
                 </div>
               </button>
 
-              {/* 통합 프로필/관리자 드롭다운 */}
               {isProfileMenuOpen && (
                 <div className="absolute top-[85%] right-0 w-72 bg-black border-2 border-white shadow-[15px_15px_0_0_rgba(255,255,255,0.05)] mt-4 animate-fade-in z-[60] overflow-hidden">
                   <div className="p-4 border-b border-white/10 bg-white/5">

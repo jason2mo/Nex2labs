@@ -20,7 +20,7 @@ const TeamView: React.FC<TeamViewProps> = ({ data, onBack }) => {
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Back to home
         </button>
-        <span className="text-[10px] font-black opacity-20 uppercase tracking-[0.5em]">NexTo Labs / Core Team</span>
+        <span className="text-[10px] font-black opacity-20 uppercase tracking-[0.5em]">{data.brandName} / Core Team</span>
       </div>
 
       {/* 히어로 섹션 */}
@@ -37,10 +37,7 @@ const TeamView: React.FC<TeamViewProps> = ({ data, onBack }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
         {data.members.map((member) => (
           <div key={member.id} className="group relative">
-            {/* 카드 배경 및 테두리 */}
             <div className="bg-white/5 brutal-border aspect-[3/4] relative overflow-hidden transition-all duration-500 group-hover:bg-white/10 group-hover:shadow-[20px_20px_0_0_rgba(255,255,255,0.05)]">
-              
-              {/* 이미지 영역 */}
               {member.image ? (
                 <img 
                   src={member.image} 
@@ -55,15 +52,10 @@ const TeamView: React.FC<TeamViewProps> = ({ data, onBack }) => {
                   </span>
                 </div>
               )}
-
-              {/* 하단 텍스트 레이어 */}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
-              
               <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-2">{member.role}</p>
                 <h3 className="editorial-title text-3xl italic text-white mb-4">{member.name}</h3>
-                
-                {/* 호버 시 나타나는 바이오 */}
                 <div className="max-h-0 overflow-hidden group-hover:max-h-40 transition-all duration-500">
                   <p className="text-xs opacity-60 leading-relaxed font-medium mb-6">
                     {member.bio}
@@ -76,12 +68,9 @@ const TeamView: React.FC<TeamViewProps> = ({ data, onBack }) => {
                 </div>
               </div>
             </div>
-            
-            {/* 장식 요소 */}
             <div className="absolute -top-4 -left-4 w-8 h-8 border-t-2 border-l-2 border-white/20 pointer-events-none"></div>
           </div>
         ))}
-
         {data.members.length === 0 && (
           <div className="col-span-full py-40 text-center opacity-10 italic uppercase tracking-[1em] text-2xl border-4 border-dashed border-white/5">
             NO_MEMBERS_FOUND

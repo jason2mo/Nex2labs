@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { HomeData, ScopeCategory } from '../types';
-import { ArrowUpRight, Play, Globe, MessageSquare, Mail, Smartphone, Database, Shield, Zap, ArrowRight } from 'lucide-react';
+import { ArrowUpRight, Play, Globe, MessageSquare, Mail, Smartphone, Database, Shield, Zap, ArrowRight, User } from 'lucide-react';
 
 interface HomeViewProps {
   data: HomeData;
@@ -23,16 +23,6 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
     content: ''
   });
 
-  const getIcon = (id: string) => {
-    switch (id) {
-      case 'infra': return Database;
-      case 'security': return Shield;
-      case 'monitoring': return Zap;
-      case 'global': return Globe;
-      default: return Database;
-    }
-  };
-
   const handleInquirySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const { name, phone, email, content } = inquiryForm;
@@ -46,12 +36,25 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
     alert('문의가 성공적으로 접수되었습니다. 곧 연락드리겠습니다.');
   };
 
-  // 섹션 렌더러 맵
+  const handleLinkClick = (target: string) => {
+    if (target === 'team') {
+      onNavigate('team');
+      return;
+    }
+    
+    const element = document.getElementById(target);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const renderSection = (id: string) => {
     switch (id) {
       case 'hero':
         return (
-          <section key="hero" className="relative min-h-[90vh] flex flex-col justify-center pt-20">
+          <section key="hero" id="home-top" className="relative min-h-[90vh] flex flex-col justify-center pt-20">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-7 space-y-12 z-10">
                 <div className="space-y-4">
@@ -88,7 +91,7 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
             <div className="container mx-auto space-y-16">
               <div className="flex flex-col items-center space-y-4">
                  <div className="w-12 h-[1px] bg-white opacity-20"></div>
-                 <h3 className="text-[11px] font-black uppercase tracking-[0.8em] opacity-30 text-center">NEXTO PARTNERS</h3>
+                 <h3 className="text-[11px] font-black uppercase tracking-[0.8em] opacity-30 text-center">{data.brandName} PARTNERS</h3>
               </div>
               <div className="flex flex-wrap justify-center lg:justify-between gap-12 items-center px-4 grayscale opacity-30 hover:opacity-100 hover:grayscale-0 transition-all duration-500">
                 {data.partnerLogos?.length > 0 ? (
@@ -110,13 +113,13 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
         );
       case 'about':
         return (
-          <section key="about" className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
+          <section key="about" id="about-section" className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center scroll-mt-24">
             <div className="relative group">
               <div className="aspect-[4/5] overflow-hidden rounded-3xl border border-white/10">
                 <img src={data.aboutImage || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop"} className="w-full h-full object-cover grayscale brightness-50 group-hover:scale-105 transition-all duration-700" alt="About" />
               </div>
               <div className="absolute -bottom-10 -right-10 bg-white text-black p-12 rounded-3xl hidden lg:block brutal-shadow z-20">
-                <p className="text-sm font-bold leading-relaxed max-w-[200px]">{data.aboutCardText}</p>
+                <p className="text-sm font-bold leading-relaxed max-w-[320px]">{data.aboutCardText}</p>
               </div>
             </div>
             <div className="space-y-12">
@@ -134,22 +137,24 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
         );
       case 'scope':
         return (
-          <section key="scope" id="scope-section" className="pt-24 space-y-20">
+          <section key="scope" id="scope-section" className="pt-24 space-y-20 scroll-mt-24">
             <div className="border-b-4 border-white pb-12 flex justify-between items-end">
               <div>
-                <h2 className="editorial-title text-6xl mb-6">BUSINESS_SCOPE.</h2>
-                <p className="text-[12px] font-black uppercase tracking-[0.5em] opacity-40">넥스토 랩스의 전문 업무 범위</p>
+                <h2 className="editorial-title text-6xl mb-6">{data.servicesTitle}</h2>
+                <p className="text-[12px] font-black uppercase tracking-[0.5em] opacity-40">{data.servicesDescription}</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10 border-2 border-white/10">
               {scopeCategories.map((s) => {
-                const Icon = getIcon(s.id);
                 return (
-                  <button key={s.id} onClick={() => onSelectCategory(s.id)} className="bg-black p-16 space-y-8 hover:bg-white text-left group transition-all relative overflow-hidden min-h-[320px]">
-                    <Icon size={32} className="opacity-40 group-hover:opacity-100 group-hover:text-black transition-all text-white" />
-                    <div>
-                      <h3 className="text-2xl font-black mb-4 uppercase italic tracking-tighter group-hover:text-black transition-colors">{s.title}</h3>
-                      <p className="text-sm font-bold opacity-40 leading-relaxed group-hover:opacity-100 group-hover:text-black transition-colors">{s.desc}</p>
+                  <button key={s.id} onClick={() => onSelectCategory(s.id)} className="bg-black p-16 py-24 space-y-8 hover:bg-white text-left group transition-all relative overflow-hidden min-h-[320px]">
+                    <div className="space-y-6">
+                      <h3 className="text-3xl font-black mb-4 uppercase italic tracking-tighter group-hover:text-black transition-colors whitespace-pre-line leading-[1.1]">
+                        {s.title}
+                      </h3>
+                      <p className="text-base font-bold opacity-40 leading-relaxed group-hover:opacity-100 group-hover:text-black transition-colors max-w-[80%]">
+                        {s.desc}
+                      </p>
                     </div>
                     <div className="absolute bottom-10 right-10 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
                       <ArrowRight size={28} className="text-black" />
@@ -170,12 +175,16 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
             <div className="space-y-6">
               {data.testimonials.map((t, i) => (
                 <div key={i} className="neo-card p-8 rounded-3xl flex justify-between items-center group">
-                  <div className="space-y-4">
+                  <div className="space-y-4 flex-1 pr-6">
                     <p className="text-sm italic opacity-60 leading-relaxed">"{t.text}"</p>
                     <div><p className="font-bold text-sm">{t.name}</p><p className="text-[10px] opacity-30 uppercase tracking-widest">{t.role}</p></div>
                   </div>
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-white/20 grayscale group-hover:grayscale-0 transition-all">
-                    <img src={t.avatar || `https://i.pravatar.cc/100?img=${i+30}`} alt={t.name} />
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-white/20 bg-black flex items-center justify-center shrink-0 grayscale group-hover:grayscale-0 transition-all">
+                    {t.avatar ? (
+                      <img src={t.avatar} className="w-full h-full object-cover" alt={t.name} />
+                    ) : (
+                      <User size={20} className="opacity-20" />
+                    )}
                   </div>
                 </div>
               ))}
@@ -204,7 +213,7 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
         );
       case 'contact':
         return (
-          <section key="contact" id="contact-section" className="pt-24 animate-fade-in">
+          <section key="contact" id="contact-section" className="pt-24 animate-fade-in scroll-mt-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
               <div className="space-y-12">
                 <div className="space-y-6">
@@ -243,14 +252,22 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
           <div key="footer_info" className="grid grid-cols-2 md:grid-cols-4 gap-12 pt-24 border-t border-white/10">
             <div className="space-y-6">
               <h4 className="text-[11px] font-bold uppercase tracking-[0.3em]">Quick Links</h4>
-              <ul className="space-y-3 text-[12px] opacity-40">{data.footerQuickLinks.map((link, i) => (<li key={i} onClick={() => onNavigate(link.target)} className="hover:opacity-100 transition-all cursor-pointer">{link.label}</li>))}</ul>
+              <ul className="space-y-3 text-[12px] opacity-40">
+                {data.footerQuickLinks.map((link, i) => (
+                  <li key={i} onClick={() => handleLinkClick(link.target)} className="hover:opacity-100 transition-all cursor-pointer">{link.label}</li>
+                ))}
+              </ul>
             </div>
             <div className="space-y-6">
               <h4 className="text-[11px] font-bold uppercase tracking-[0.3em]">Explore</h4>
-              <ul className="space-y-3 text-[12px] opacity-40">{data.footerExploreLinks.map((link, i) => (<li key={i} onClick={() => onNavigate(link.target)} className="hover:opacity-100 transition-all cursor-pointer">{link.label}</li>))}</ul>
+              <ul className="space-y-3 text-[12px] opacity-40">
+                {data.footerExploreLinks.map((link, i) => (
+                  <li key={i} onClick={() => handleLinkClick(link.target)} className="hover:opacity-100 transition-all cursor-pointer">{link.label}</li>
+                ))}
+              </ul>
             </div>
             <div className="col-span-2 space-y-6">
-              <h4 className="text-[11px] font-bold uppercase tracking-[0.3em]">Futuristic Tech & VR Website</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-[0.3em]">{data.brandName.toUpperCase()} Labs Infrastructure</h4>
               <p className="text-sm opacity-40 leading-relaxed font-light">{data.footerInfo}</p>
               <div className="flex gap-6">
                 <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center opacity-40 hover:opacity-100 cursor-pointer transition-all"><Globe size={14} /></div>
@@ -265,10 +282,7 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
 
   return (
     <div className="space-y-48 animate-fade-in pb-32">
-      {/* sectionOrder에 정의된 순서대로 렌더링 */}
       {data.sectionOrder.map(sectionId => renderSection(sectionId))}
-
-      {/* 컨택트 섹션이 sectionOrder에 포함되어 있지 않은 경우를 대비한 렌더링 (하위 호환성) */}
       {!data.sectionOrder.includes('contact') && renderSection('contact')}
     </div>
   );

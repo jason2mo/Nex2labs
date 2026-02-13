@@ -76,7 +76,7 @@ export interface TestimonialItem {
 
 export interface FooterLink {
   label: string;
-  target: string; // ViewState 혹은 외부 URL
+  target: string;
 }
 
 export interface MemberItem {
@@ -88,63 +88,41 @@ export interface MemberItem {
 }
 
 export interface HomeData {
-  // Brand
   brandName: string;
   logoImage: string | null;
-
-  // Hero
   heroSmallTag: string;
   mainTitle: string;
   description: string;
   heroImage: string | null;
   realityIndex: string;
   trustedCount: string;
-  
-  // Logos
   partnerLogos: string[]; 
-  
-  // About
   aboutSmallTag: string;
   aboutTitle: string;
   aboutDescription: string;
-  aboutTags: string; // Comma separated
+  aboutTags: string;
   aboutImage: string | null;
-  aboutCardText: string; // 흰색 카드 문구
-  
-  // Services
+  aboutCardText: string;
   servicesTitle: string;
+  servicesDescription: string;
   services: ServiceItem[];
-  
-  // Testimonials
   testimonialsTitle: string;
   testimonialsDescription: string;
   testimonials: TestimonialItem[];
-  
-  // CTA Section
   ctaTitle: string;
   ctaTag: string;
   ctaVideo: string | null; 
-  
-  // Contact Section
   contactTitle: string;
   contactDescription: string;
   contactEmail: string;
   contactPhone: string;
-
-  // Footer
   footerInfo: string;
   footerQuickLinks: FooterLink[];
   footerExploreLinks: FooterLink[];
-
-  // Management UI Labels
   mgmtPreviewLabel: string;
   loginButtonText: string;
   systemStatusText: string;
-
-  // Ordering
   sectionOrder: string[]; 
-  
-  // Team
   members: MemberItem[];
   teamHeroTitle: string;
   teamHeroDescription: string;
