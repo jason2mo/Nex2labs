@@ -37,11 +37,11 @@ const CustomerView: React.FC<CustomerViewProps> = ({ session, products, orders, 
   const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.platform.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="space-y-24 animate-fade-in pb-40 text-white">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-12 border-b-4 border-white pb-12">
-        <div className="flex items-center gap-8">
-          <div className="w-5 h-5 bg-white rounded-full animate-pulse shadow-[0_0_15px_white]"></div>
-          <h2 className="editorial-title text-5xl">INVENTORY_LIVE.</h2>
+    <div className="space-y-24 animate-fade-in pb-40 text-black">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-12 border-b-2 md:border-b-4 border-black pb-8 md:pb-12">
+        <div className="flex items-center gap-4 md:gap-8">
+          <div className="w-3 h-3 md:w-5 md:h-5 bg-black rounded-full animate-pulse shadow-[0_0_15px_black]"></div>
+          <h2 className="editorial-title text-3xl md:text-5xl">INVENTORY_LIVE.</h2>
         </div>
         <div className="relative w-full md:w-[450px]">
           <input 
@@ -49,50 +49,50 @@ const CustomerView: React.FC<CustomerViewProps> = ({ session, products, orders, 
             value={searchTerm} 
             onChange={e => setSearchTerm(e.target.value)} 
             placeholder="인벤토리 검색..." 
-            className="w-full pl-0 pr-12 py-5 bg-transparent border-b-2 border-white/20 text-xl font-black uppercase tracking-tighter outline-none placeholder:text-white/10 focus:border-white transition-all" 
+            className="w-full pl-0 pr-12 py-3 md:py-5 bg-transparent border-b-2 border-black/20 text-lg md:text-xl font-black uppercase tracking-tighter outline-none placeholder:text-black/10 focus:border-black transition-all" 
           />
-          <Search className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30" size={28} />
+          <Search className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30" size={24} md:size={28} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-16">
         {filtered.map(product => {
           const expired = isExpired(product.deadline);
           return (
             <div key={product.id} className={`group flex flex-col ${expired ? 'opacity-20 grayscale pointer-events-none' : ''}`}>
-              <div className="bg-black brutal-border aspect-square relative p-12 flex flex-col justify-between transition-all group-hover:bg-white/5 group-hover:shadow-[12px_12px_0_0_white]">
+              <div className="bg-[#FAF9F6] brutal-border aspect-square relative p-6 md:p-12 flex flex-col justify-between transition-all group-hover:bg-black/5 group-hover:shadow-[8px_8px_0_0_black] md:group-hover:shadow-[12px_12px_0_0_black]">
                 <div className="flex justify-between items-start">
-                   <span className="bg-white text-black text-[11px] font-black px-3 py-1 uppercase tracking-widest italic">{product.platform}</span>
-                   {!expired && <div className="text-[10px] font-black border-2 border-white px-3 py-1 uppercase tracking-widest bg-black">입고 완료</div>}
+                   <span className="bg-black text-[#FAF9F6] text-[9px] md:text-[11px] font-black px-2 md:px-3 py-0.5 md:py-1 uppercase tracking-widest italic">{product.platform}</span>
+                   {!expired && <div className="text-[8px] md:text-[10px] font-black border border-black px-2 md:px-3 py-0.5 md:py-1 uppercase tracking-widest bg-[#FAF9F6]">입고 완료</div>}
                 </div>
                 
                 <div>
-                  <h3 className="text-3xl font-black leading-none mb-4 uppercase tracking-tighter truncate" title={product.name}>{product.name}</h3>
-                  <div className="flex items-baseline gap-4">
-                    <span className="text-5xl font-black italic tracking-tighter">¥{formatPrice(product.priceInclTax)}</span>
-                    <span className="text-[11px] font-black opacity-30 uppercase tracking-widest">단가</span>
+                  <h3 className="text-xl md:text-3xl font-black leading-none mb-2 md:mb-4 uppercase tracking-tighter truncate" title={product.name}>{product.name}</h3>
+                  <div className="flex items-baseline gap-2 md:gap-4">
+                    <span className="text-3xl md:text-5xl font-black italic tracking-tighter">¥{formatPrice(product.priceInclTax)}</span>
+                    <span className="text-[9px] md:text-[11px] font-black opacity-30 uppercase tracking-widest">단가</span>
                   </div>
                 </div>
                 
-                <div className="pt-8 border-t-2 border-white/10 flex justify-between items-center text-[11px] font-black uppercase tracking-widest opacity-50">
-                  <div className="flex items-center gap-3"><Calendar size={18}/> {product.outboundDate}</div>
-                  <div className="flex items-center gap-3"><Clock size={18}/> {product.deadline} 마감</div>
+                <div className="pt-4 md:pt-8 border-t border-black/10 flex justify-between items-center text-[9px] md:text-[11px] font-black uppercase tracking-widest opacity-50">
+                  <div className="flex items-center gap-2 md:gap-3"><Calendar size={14} md:size={18}/> {product.outboundDate}</div>
+                  <div className="flex items-center gap-2 md:gap-3"><Clock size={14} md:size={18}/> {product.deadline} 마감</div>
                 </div>
               </div>
 
               {!expired && (
-                <div className="mt-8 flex items-center gap-4">
+                <div className="mt-4 md:mt-8 flex items-center gap-3 md:gap-4">
                   <input 
                     type="number" 
                     min="1" 
                     placeholder="수량" 
                     value={qtys[product.id] || ''} 
                     onChange={e => setQtys({...qtys, [product.id]: e.target.value})} 
-                    className="w-24 px-4 py-5 bg-black brutal-border text-2xl font-black text-center outline-none focus:bg-white/10 transition-colors" 
+                    className="w-16 md:w-24 px-2 md:px-4 py-3 md:py-5 bg-[#FAF9F6] brutal-border text-xl md:text-2xl font-black text-center outline-none focus:bg-black/10 transition-colors" 
                   />
                   <button 
                     onClick={() => placeOrder(product)} 
-                    className="flex-1 bg-white text-black py-5 font-black text-sm uppercase tracking-[0.4em] border-2 border-white hover:bg-black hover:text-white transition-all shadow-sm"
+                    className="flex-1 bg-black text-[#FAF9F6] py-3 md:py-5 font-black text-[10px] md:text-sm uppercase tracking-[0.2em] md:tracking-[0.4em] border-2 border-black hover:bg-[#FAF9F6] hover:text-black transition-all shadow-sm"
                   >
                     주문 추가하기
                   </button>
@@ -104,15 +104,16 @@ const CustomerView: React.FC<CustomerViewProps> = ({ session, products, orders, 
       </div>
 
       {session.type === 'customer' && (
-        <section className="pt-32 border-t-4 border-white space-y-20">
-          <div className="flex justify-between items-end">
-             <h2 className="editorial-title text-6xl">ACTIVITY_LOG.</h2>
-             <span className="text-[11px] font-black opacity-40 tracking-[0.5em] uppercase">개인 주문 내역</span>
+        <section className="pt-16 md:pt-32 border-t-2 md:border-t-4 border-black space-y-12 md:space-y-20">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+             <h2 className="editorial-title text-4xl md:text-6xl">ACTIVITY_LOG.</h2>
+             <span className="text-[9px] md:text-[11px] font-black opacity-40 tracking-[0.3em] md:tracking-[0.5em] uppercase">개인 주문 내역</span>
           </div>
 
-          <div className="bg-black border-4 border-white overflow-hidden brutal-shadow">
-            <table className="w-full text-left">
-              <thead className="bg-white text-black text-[12px] font-black uppercase tracking-widest">
+          <div className="bg-[#FAF9F6] border-2 md:border-4 border-black overflow-hidden brutal-shadow">
+            {/* Desktop Table View */}
+            <table className="w-full text-left hidden md:table">
+              <thead className="bg-black text-[#FAF9F6] text-[12px] font-black uppercase tracking-widest">
                 <tr>
                   <th className="px-10 py-8">주문일시</th>
                   <th className="px-10 py-8">상품 정보</th>
@@ -121,9 +122,9 @@ const CustomerView: React.FC<CustomerViewProps> = ({ session, products, orders, 
                   <th className="px-10 py-8 text-center">결제 증빙</th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-white/10 font-bold text-sm">
+              <tbody className="divide-y-2 divide-black/10 font-bold text-sm">
                 {myOrders.map(o => (
-                  <tr key={o.id} className="hover:bg-white/5 transition-colors group">
+                  <tr key={o.id} className="hover:bg-black/5 transition-colors group">
                     <td className="px-10 py-10 text-[11px] font-mono opacity-40">{new Date(o.createdAt).toLocaleString()}</td>
                     <td className="px-10 py-10 uppercase tracking-tighter text-lg">{o.productName}</td>
                     <td className="px-10 py-10 text-center text-3xl font-black italic">{o.quantity}</td>
@@ -131,12 +132,12 @@ const CustomerView: React.FC<CustomerViewProps> = ({ session, products, orders, 
                     <td className="px-10 py-10 text-center">
                       <div className="flex justify-center">
                         {o.paymentProof ? (
-                          <button onClick={() => setSelectedImg(o.paymentProof!)} className="w-16 h-20 bg-white brutal-border overflow-hidden hover:scale-105 transition-all">
+                          <button onClick={() => setSelectedImg(o.paymentProof!)} className="w-16 h-20 bg-black brutal-border overflow-hidden hover:scale-105 transition-all">
                             <img src={o.paymentProof} className="w-full h-full object-cover grayscale group-hover:grayscale-0" alt="Proof" />
                           </button>
                         ) : (
                           <div className="flex flex-col items-center gap-2">
-                            <label className="bg-white text-black px-6 py-3 text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-black hover:text-white border-2 border-white transition-all flex items-center gap-2">
+                            <label className="bg-black text-[#FAF9F6] px-6 py-3 text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-neutral-800 hover:text-white border-2 border-black transition-all flex items-center gap-2">
                               <Upload size={12} /> 증빙 업로드
                               <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUploadImg(o.id, e)} />
                             </label>
@@ -147,18 +148,51 @@ const CustomerView: React.FC<CustomerViewProps> = ({ session, products, orders, 
                     </td>
                   </tr>
                 ))}
-                {myOrders.length === 0 && <tr><td colSpan={5} className="py-40 text-center opacity-10 font-black italic uppercase tracking-[1em] text-2xl">데이터가 없습니다</td></tr>}
               </tbody>
             </table>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-black/10">
+              {myOrders.map(o => (
+                <div key={o.id} className="p-6 space-y-6">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <p className="text-[9px] font-mono opacity-40">{new Date(o.createdAt).toLocaleString()}</p>
+                      <p className="font-black text-base uppercase">{o.productName}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-[10px] opacity-40 uppercase">수량: {o.quantity}</p>
+                      <p className="text-xl font-black italic">¥{formatPrice(o.totalPriceInclTax)}</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      {o.paymentProof ? (
+                        <button onClick={() => setSelectedImg(o.paymentProof!)} className="w-12 h-16 bg-black border border-black/20 overflow-hidden">
+                          <img src={o.paymentProof} className="w-full h-full object-cover" alt="Proof" />
+                        </button>
+                      ) : (
+                        <label className="bg-black text-[#FAF9F6] px-4 py-2 text-[9px] font-black uppercase tracking-widest cursor-pointer hover:bg-neutral-800 hover:text-white border border-black transition-all flex items-center gap-2">
+                          <Upload size={10} /> 업로드
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUploadImg(o.id, e)} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {myOrders.length === 0 && <div className="py-40 text-center opacity-10 font-black italic uppercase tracking-[0.5em] md:tracking-[1em] text-xl md:text-2xl">데이터가 없습니다</div>}
           </div>
         </section>
       )}
 
       {selectedImg && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-12 backdrop-blur-md" onClick={() => setSelectedImg(null)}>
-          <div className="relative animate-fade-in bg-black p-4 border-4 border-white">
-            <button className="absolute -top-16 right-0 text-white p-2"><X size={40}/></button>
-            <img src={selectedImg} className="max-w-full max-h-[80vh] border border-white/20" alt="Evidence Asset" />
+        <div className="fixed inset-0 z-[100] bg-[#FAF9F6]/95 flex flex-col items-center justify-center p-12 backdrop-blur-md" onClick={() => setSelectedImg(null)}>
+          <div className="relative animate-fade-in bg-[#FAF9F6] p-4 border-4 border-black">
+            <button className="absolute -top-16 right-0 text-black p-2"><X size={40}/></button>
+            <img src={selectedImg} className="max-w-full max-h-[80vh] border border-black/20" alt="Evidence Asset" />
           </div>
         </div>
       )}

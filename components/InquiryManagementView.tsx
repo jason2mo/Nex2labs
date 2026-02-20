@@ -27,10 +27,10 @@ const InquiryManagementView: React.FC<InquiryManagementViewProps> = ({ inquiries
   const selectedInquiry = inquiries.find(inq => inq.id === selectedInquiryId);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in text-white min-h-[70vh]">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in text-black min-h-[70vh]">
       {/* 문의 리스트 */}
       <div className="lg:col-span-5 space-y-6">
-        <div className="border-b-2 border-white pb-6 flex justify-between items-end">
+        <div className="border-b-2 border-black pb-6 flex justify-between items-end">
           <h2 className="editorial-title text-4xl italic">INBOX_SYSTEM</h2>
           <span className="text-[10px] font-black opacity-40 uppercase tracking-widest">{inquiries.length} 총 문의</span>
         </div>
@@ -45,13 +45,13 @@ const InquiryManagementView: React.FC<InquiryManagementViewProps> = ({ inquiries
               }}
               className={`w-full p-6 text-left border-2 transition-all group relative overflow-hidden ${
                 selectedInquiryId === inq.id 
-                  ? 'bg-white text-black border-white' 
-                  : 'bg-black border-white/10 hover:border-white'
+                  ? 'bg-black text-[#FAF9F6] border-black' 
+                  : 'bg-[#FAF9F6] border-black/10 hover:border-black'
               }`}
             >
               {!inq.isRead && (
-                <div className="absolute top-0 right-0 w-8 h-8 bg-white flex items-center justify-center">
-                  <span className="w-2 h-2 bg-black rounded-full animate-pulse"></span>
+                <div className="absolute top-0 right-0 w-8 h-8 bg-black flex items-center justify-center">
+                  <span className="w-2 h-2 bg-[#FAF9F6] rounded-full animate-pulse"></span>
                 </div>
               )}
               
@@ -62,18 +62,18 @@ const InquiryManagementView: React.FC<InquiryManagementViewProps> = ({ inquiries
               </div>
               
               <h3 className="text-xl font-black uppercase tracking-tighter truncate mb-2">{inq.name}</h3>
-              <p className={`text-[11px] font-bold opacity-40 truncate ${selectedInquiryId === inq.id ? 'text-black' : 'text-white'}`}>
+              <p className={`text-[11px] font-bold opacity-40 truncate ${selectedInquiryId === inq.id ? 'text-[#FAF9F6]' : 'text-black'}`}>
                 {inq.contact}
               </p>
 
-              <div className={`absolute bottom-4 right-6 opacity-0 group-hover:opacity-100 transition-all ${selectedInquiryId === inq.id ? 'text-black' : 'text-white'}`}>
+              <div className={`absolute bottom-4 right-6 opacity-0 group-hover:opacity-100 transition-all ${selectedInquiryId === inq.id ? 'text-[#FAF9F6]' : 'text-black'}`}>
                 <ArrowRight size={18} />
               </div>
             </button>
           ))}
 
           {inquiries.length === 0 && (
-            <div className="py-20 text-center border-2 border-dashed border-white/10 opacity-20">
+            <div className="py-20 text-center border-2 border-dashed border-black/10 opacity-20">
               <p className="text-[11px] font-black uppercase tracking-[0.5em]">수신된 문의가 없습니다.</p>
             </div>
           )}
@@ -83,8 +83,8 @@ const InquiryManagementView: React.FC<InquiryManagementViewProps> = ({ inquiries
       {/* 상세 보기 */}
       <div className="lg:col-span-7">
         {selectedInquiry ? (
-          <div className="bg-white text-black p-12 brutal-border brutal-shadow min-h-[400px] flex flex-col h-full animate-fade-in">
-            <div className="flex justify-between items-start border-b-2 border-black/10 pb-8 mb-8">
+          <div className="bg-black text-[#FAF9F6] p-12 brutal-border brutal-shadow min-h-[400px] flex flex-col h-full animate-fade-in">
+            <div className="flex justify-between items-start border-b-2 border-[#FAF9F6]/10 pb-8 mb-8">
               <div>
                 <p className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em] mb-2">발신자 정보</p>
                 <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-2">{selectedInquiry.name}</h3>
@@ -93,7 +93,7 @@ const InquiryManagementView: React.FC<InquiryManagementViewProps> = ({ inquiries
               <div className="flex gap-4">
                 <button 
                   onClick={() => deleteInquiry(selectedInquiry.id)}
-                  className="p-3 border-2 border-black hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                  className="p-3 border-2 border-[#FAF9F6] hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
                   title="영구 삭제"
                 >
                   <Trash2 size={20} />
@@ -108,15 +108,15 @@ const InquiryManagementView: React.FC<InquiryManagementViewProps> = ({ inquiries
               </div>
             </div>
 
-            <div className="mt-12 pt-8 border-t-2 border-black/10 flex justify-between items-center">
+            <div className="mt-12 pt-8 border-t-2 border-[#FAF9F6]/10 flex justify-between items-center">
               <div className="flex items-center gap-3 opacity-30 text-[11px] font-black uppercase tracking-widest">
                 <Clock size={16} />
                 수신 일시: {new Date(selectedInquiry.createdAt).toLocaleString()}
               </div>
               <button 
                 onClick={() => toggleReadStatus(selectedInquiry.id)}
-                className={`flex items-center gap-2 px-6 py-2 border-2 border-black font-black text-[11px] uppercase tracking-widest transition-all ${
-                  selectedInquiry.isRead ? 'bg-black text-white' : 'bg-transparent text-black'
+                className={`flex items-center gap-2 px-6 py-2 border-2 border-[#FAF9F6] font-black text-[11px] uppercase tracking-widest transition-all ${
+                  selectedInquiry.isRead ? 'bg-[#FAF9F6] text-black' : 'bg-transparent text-[#FAF9F6]'
                 }`}
               >
                 <CheckCircle size={14} />
@@ -125,7 +125,7 @@ const InquiryManagementView: React.FC<InquiryManagementViewProps> = ({ inquiries
             </div>
           </div>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center border-4 border-dashed border-white/5 opacity-10">
+          <div className="h-full flex flex-col items-center justify-center border-4 border-dashed border-black/5 opacity-10">
             <Mail size={80} strokeWidth={0.5} />
             <p className="text-xl font-black uppercase tracking-[0.5em] mt-8 text-center leading-loose">
               SELECT_AN_INQUIRY<br/>TO_READ_DETAILS

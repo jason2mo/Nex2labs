@@ -47,38 +47,38 @@ const Gateway: React.FC<GatewayProps> = ({ brandName, logo, customers, admins, o
             {logo ? (
               <img src={logo} className="max-h-24 mx-auto object-contain" alt={brandName} />
             ) : (
-              <div className="bg-white px-10 py-5 brutal-border shadow-[10px_10px_0_0_white]">
-                <h1 className="editorial-title text-5xl leading-none text-black tracking-tighter uppercase">{brandName}</h1>
+              <div className="bg-black px-10 py-5 brutal-border shadow-[10px_10px_0_0_black]">
+                <h1 className="editorial-title text-5xl leading-none text-[#FAF9F6] tracking-tighter uppercase">{brandName}</h1>
               </div>
             )}
           </div>
-          <p className="text-[10px] font-black tracking-[0.8em] uppercase text-white mt-12 opacity-60">인증 포털 시스템</p>
+          <p className="text-[10px] font-black tracking-[0.8em] uppercase text-black mt-12 opacity-60">인증 포털 시스템</p>
         </div>
 
-        <div className="bg-black border-4 border-white p-12 relative brutal-shadow">
-          <div className="absolute -top-[20px] -left-[4px] bg-white text-black text-[11px] font-black px-4 py-1 uppercase tracking-[0.2em]">
+        <div className="bg-[#FAF9F6] border-2 md:border-4 border-black p-8 md:p-12 relative brutal-shadow">
+          <div className="absolute -top-[16px] md:-top-[20px] -left-[4px] bg-black text-[#FAF9F6] text-[10px] md:text-[11px] font-black px-3 md:px-4 py-1 uppercase tracking-[0.2em]">
             보안 키 입력
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-10">
+          <form onSubmit={handleSubmit} className="space-y-8 md:space-y-10">
             <div className="space-y-4">
-              <label className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 block text-center text-white">ACCESS_KEY</label>
+              <label className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] opacity-40 block text-center text-black">ACCESS_KEY</label>
               <input 
                 type="password" 
                 placeholder="••••" 
                 value={code}
                 onChange={handleInputChange}
-                className="w-full bg-transparent border-b-4 border-white rounded-none px-6 py-4 text-white font-black tracking-[1.5em] text-center text-5xl uppercase outline-none focus:border-white transition-all caret-transparent"
+                className="w-full bg-transparent border-b-2 md:border-b-4 border-black rounded-none px-4 md:px-6 py-3 md:py-4 text-black font-black tracking-[1em] md:tracking-[1.5em] text-center text-3xl md:text-5xl uppercase outline-none focus:border-black transition-all caret-transparent"
               />
             </div>
             {err && (
-              <div className="text-black text-[12px] font-black p-4 bg-white leading-relaxed">
+              <div className="text-[#FAF9F6] text-[11px] md:text-[12px] font-black p-3 md:p-4 bg-black leading-relaxed">
                 [경고] {err}
               </div>
             )}
             <button 
               type="submit" 
-              className="w-full bg-white text-black py-5 rounded-none font-black text-sm uppercase tracking-[0.5em] border-2 border-white hover:bg-black hover:text-white transition-all active:scale-[0.98]"
+              className="w-full bg-black text-[#FAF9F6] py-4 md:py-5 rounded-none font-black text-xs md:text-sm uppercase tracking-[0.4em] md:tracking-[0.5em] border-2 border-black hover:bg-neutral-800 transition-all active:scale-[0.98]"
             >
               시스템 접속하기
             </button>
