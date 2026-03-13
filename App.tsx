@@ -222,7 +222,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] flex flex-col font-sans selection:bg-black selection:text-white text-black">
+    <div className="min-h-screen bg-black flex flex-col font-sans selection:bg-[#FF6B00] selection:text-white text-white">
       {!isAppReady && <LoadingOverlay brandName={homeData.brandName} />}
       
       <nav className="bg-black border-b border-white/20 sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
@@ -244,7 +244,7 @@ const App: React.FC = () => {
         
         <div className="flex items-center gap-4 md:gap-8 h-full">
           {!session ? (
-            <button type="button" onClick={() => handleNavigate('login')} className="flex items-center gap-2 bg-white text-black px-4 md:px-6 py-2 md:py-2.5 font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-neutral-200 transition-all">
+            <button type="button" onClick={() => handleNavigate('login')} className="btn-block flex items-center gap-2 px-6 md:px-10 py-4 md:py-5">
               <Key size={14}/> <span className="hidden xs:inline">{homeData.loginButtonText}</span><span className="xs:hidden">LOGIN</span>
             </button>
           ) : (
@@ -272,18 +272,18 @@ const App: React.FC = () => {
               </button>
 
               {isProfileMenuOpen && (
-                <div className="absolute top-[85%] right-0 w-64 md:w-72 bg-[#FAF9F6] border-2 border-black/20 shadow-[15px_15px_0_0_rgba(0,0,0,0.05)] mt-4 animate-fade-in z-[60] overflow-hidden">
-                  <div className="p-4 border-b border-black/10">
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">인증 세션 정보</p>
-                    <p className="text-xs font-bold truncate opacity-80 italic">CODE: {session.data?.code}</p>
+                <div className="absolute top-[85%] right-0 w-64 md:w-72 bg-black border-2 border-white/20 shadow-[15px_15px_0_0_rgba(255,107,0,0.2)] mt-4 animate-fade-in z-[60] overflow-hidden">
+                  <div className="p-4 border-b border-white/10">
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">인증 세션 정보</p>
+                    <p className="text-xs font-bold truncate text-white/80 italic">CODE: {session.data?.code}</p>
                   </div>
                   
-                  <div className="py-2">
+                  <div className="py-2 text-white">
                     {session.type === 'admin' && (
                       <>
                         <button 
                           onClick={() => handleNavigate('dashboard')}
-                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-black hover:text-[#FAF9F6] group ${currentView === 'dashboard' ? 'bg-black/10' : ''}`}
+                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white/10 group ${currentView === 'dashboard' ? 'bg-[#FF6B00]/20' : ''}`}
                         >
                           <Layout size={18} className="opacity-40 group-hover:opacity-100" />
                           <div className="flex flex-col">
@@ -293,7 +293,7 @@ const App: React.FC = () => {
                         </button>
                         <button 
                           onClick={() => handleNavigate('homepage_mgmt')}
-                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-black hover:text-[#FAF9F6] group ${currentView === 'homepage_mgmt' ? 'bg-black/10' : ''}`}
+                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white/10 group ${currentView === 'homepage_mgmt' ? 'bg-[#FF6B00]/20' : ''}`}
                         >
                           <Settings size={18} className="opacity-40 group-hover:opacity-100" />
                           <div className="flex flex-col">
@@ -303,14 +303,14 @@ const App: React.FC = () => {
                         </button>
                         <button 
                           onClick={() => handleNavigate('inquiry_mgmt')}
-                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-black hover:text-[#FAF9F6] group relative ${currentView === 'inquiry_mgmt' ? 'bg-black/10' : ''}`}
+                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white/10 group relative ${currentView === 'inquiry_mgmt' ? 'bg-[#FF6B00]/20' : ''}`}
                         >
                           <Mail size={18} className="opacity-40 group-hover:opacity-100" />
                           <div className="flex flex-col">
                             <span className="text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
                               문의 내역
                               {unreadInquiriesCount > 0 && (
-                                <span className="bg-black text-[#FAF9F6] text-[8px] px-1.5 py-0.5 font-black rounded-full animate-bounce">NEW</span>
+                                <span className="bg-[#FF6B00] text-white text-[8px] px-1.5 py-0.5 font-black rounded-full animate-bounce">NEW</span>
                               )}
                             </span>
                             <span className="text-[8px] font-bold opacity-40 uppercase">고객 문의 및 비즈니스 요청</span>
@@ -322,7 +322,7 @@ const App: React.FC = () => {
                     {session.type === 'customer' && (
                       <button 
                         onClick={() => handleNavigate('collection')}
-                        className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-black hover:text-[#FAF9F6] group ${currentView === 'collection' ? 'bg-black/10' : ''}`}
+                        className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white/10 group ${currentView === 'collection' ? 'bg-[#FF6B00]/20' : ''}`}
                       >
                         <ShoppingBag size={18} className="opacity-40 group-hover:opacity-100" />
                         <div className="flex flex-col">
@@ -332,7 +332,7 @@ const App: React.FC = () => {
                       </button>
                     )}
 
-                    <div className="border-t border-black/10 mt-2 pt-2">
+                    <div className="border-t border-white/10 mt-2 pt-2">
                       <button 
                         onClick={handleLogout}
                         className="w-full text-left px-6 py-5 flex items-center gap-4 transition-all hover:bg-red-600 hover:text-white group"
@@ -353,14 +353,14 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
 
-      <footer className="bg-[#FAF9F6] text-black py-6 md:h-16 flex flex-col md:flex-row items-center px-6 md:px-12 justify-between text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.5em] uppercase border-t border-black/10 gap-4">
+      <footer className="bg-black text-white py-6 md:h-16 flex flex-col md:flex-row items-center px-6 md:px-12 justify-between text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.5em] uppercase border-t border-white/10 gap-4">
         <div className="flex items-center gap-6 md:gap-12">
            <span className="flex items-center gap-3">
-             <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-black rounded-full animate-pulse shadow-[0_0_8px_black]"></span> 
+             <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#FF6B00] rounded-full animate-pulse shadow-[0_0_8px_#FF6B00]"></span> 
              {homeData.systemStatusText}
            </span>
         </div>
-        <div className="opacity-30 tracking-[0.2em] text-center md:text-right">
+        <div className="text-white/50 tracking-[0.2em] text-center md:text-right">
           {homeData.brandName.toUpperCase()}_LABS // © 2024 // LOCAL_DATABASE_SYNC
         </div>
       </footer>
