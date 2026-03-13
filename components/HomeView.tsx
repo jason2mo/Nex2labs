@@ -76,9 +76,9 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
                 </div>
                 <p className="text-white/60 leading-relaxed font-light max-w-xl" style={{ fontSize: `${data.descriptionFontSize || 16}px` }}>{data.description}</p>
               </div>
-              <div className="lg:col-span-5 relative hidden lg:block">
-                <div className="relative aspect-[3/4] hero-image-mask rounded-3xl overflow-hidden border border-white/10">
-                  <img src={data.heroImage || "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?q=80&w=1000&auto=format&fit=crop"} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="Hero" />
+              <div className="lg:col-span-5 relative">
+                <div className="relative aspect-[4/3] lg:aspect-[3/4] max-h-[50vh] lg:max-h-none hero-image-mask rounded-2xl lg:rounded-3xl overflow-hidden border border-white/10">
+                  <img src={data.heroImage || "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?q=80&w=1000&auto=format&fit=crop"} className="w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-1000" alt="Hero" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                 </div>
               </div>
