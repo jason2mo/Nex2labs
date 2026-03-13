@@ -196,7 +196,7 @@ const AdminView: React.FC<AdminViewProps> = ({
               </div>
               
               {(orders.length === 0) && (
-                <div className="py-40 text-center opacity-10 italic uppercase tracking-[0.5em] md:tracking-[1em]">NO_RECORDS</div>
+                <div className="py-40 text-center text-black/60 font-black italic uppercase tracking-[0.5em] md:tracking-[1em]">NO_RECORDS</div>
               )}
             </div>
           )}
@@ -223,7 +223,7 @@ const AdminView: React.FC<AdminViewProps> = ({
                   </button>
                 </div>
               ))}
-              {products.length === 0 && <div className="col-span-full py-40 text-center opacity-10 italic uppercase tracking-widest">INVENTORY_EMPTY</div>}
+              {products.length === 0 && <div className="col-span-full py-40 text-center text-black/60 font-black italic uppercase tracking-widest">INVENTORY_EMPTY</div>}
             </div>
           )}
 
