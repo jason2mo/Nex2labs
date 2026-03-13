@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Shield, Zap, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, ArrowRight, Clock, UserPlus, X, Check, Save, MessageSquare, Loader2, Upload } from 'lucide-react';
 import { HomeData, ScopePost, ScopeCategory, TestimonialItem, FooterLink, MemberItem } from '../types';
+import { STORAGE_KEYS } from '../constants';
 import TeamView from './TeamView';
 
 interface HomepageManagementViewProps {
@@ -62,12 +63,19 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
   });
 
   const handleManualSave = () => {
+    // 즉시 localStorage에 저장
+    localStorage.setItem(STORAGE_KEYS.HOME_DATA, JSON.stringify(homeData));
+    localStorage.setItem(STORAGE_KEYS.SCOPE_POSTS, JSON.stringify(scopePosts));
+    localStorage.setItem(STORAGE_KEYS.SCOPE_CATEGORIES, JSON.stringify(scopeCategories));
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2000);
-    }, 800);
+      // 성공 메시지 표시 후 페이지 새로고침
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    }, 600);
   };
 
   const onDragStart = (e: React.DragEvent, index: number) => {
@@ -132,37 +140,37 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         return (
           <div className="space-y-10">
             <div>
-              <label className="text-[10px] font-black opacity-30 uppercase tracking-widest block mb-2">브랜드 이름 (사이트 전체 적용)</label>
+              <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block mb-2">브랜드 이름 (사이트 전체 적용)</label>
               <input 
                 value={homeData.brandName} 
                 onChange={e => updateHomeData({ brandName: e.target.value.toUpperCase() })} 
-                className="w-full bg-transparent border-b-2 border-black/20 p-3 text-lg font-black outline-none focus:border-black transition-all" 
+                className="w-full bg-transparent border-b-2 border-white/20 p-3 text-lg font-black outline-none text-white focus:border-[#FF6B00] transition-all placeholder:text-white/40" 
                 placeholder="NEXTO"
               />
             </div>
             <div className="pt-6">
               <div className="flex justify-between items-center mb-4">
-                <label className="text-[10px] font-black opacity-30 uppercase tracking-widest block">메인 로고 이미지</label>
+                <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block">메인 로고 이미지</label>
                 {homeData.logoImage && (
-                  <button onClick={() => updateHomeData({ logoImage: null })} className="text-[9px] font-black text-red-500 uppercase">로고 삭제</button>
+                  <button onClick={() => updateHomeData({ logoImage: null })} className="text-[9px] font-black text-red-400 uppercase">로고 삭제</button>
                 )}
               </div>
-              <label className="block w-full bg-black/5 border-2 border-dashed border-black/20 py-10 text-center cursor-pointer hover:bg-black/10 transition-all group overflow-hidden relative">
+              <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-10 text-center cursor-pointer hover:bg-white/10 transition-all group overflow-hidden relative text-white">
                 {homeData.logoImage ? (
                   <img src={homeData.logoImage} className="max-h-20 mx-auto object-contain" alt="Logo" />
                 ) : (
                   <div className="space-y-2">
-                    <ImageIcon className="mx-auto opacity-20" size={32}/>
-                    <p className="text-[10px] font-black opacity-30">클릭하여 로고 업로드</p>
+                    <ImageIcon className="mx-auto opacity-30" size={32}/>
+                    <p className="text-[10px] font-black text-white/50">클릭하여 로고 업로드</p>
                   </div>
                 )}
                 <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ logoImage: img }), e)} />
               </label>
               <div className="mt-6">
-                <label className="text-[10px] font-black opacity-30 uppercase tracking-widest block mb-3">로고 배경색</label>
+                <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block mb-3">로고 배경색</label>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { value: 'transparent', label: '투명', style: { background: 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%)', backgroundSize: '8px 8px', backgroundPosition: '0 0, 4px 4px', backgroundColor: '#eee' } },
+                    { value: 'transparent', label: '투명', style: { background: 'linear-gradient(45deg, #555 25%, transparent 25%, transparent 75%, #555 75%), linear-gradient(45deg, #555 25%, transparent 25%, transparent 75%, #555 75%)', backgroundSize: '8px 8px', backgroundPosition: '0 0, 4px 4px', backgroundColor: '#333' } },
                     { value: '#FAF9F6', label: '페이지배경' },
                     { value: '#000000', label: '검정' },
                     { value: '#FFFFFF', label: '흰색' },
@@ -173,17 +181,17 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                       key={value}
                       type="button"
                       onClick={() => updateHomeData({ logoBackgroundColor: value })}
-                      className={`w-10 h-10 rounded-lg border-2 flex-shrink-0 transition-all ${(homeData.logoBackgroundColor ?? 'transparent') === value ? 'border-black ring-2 ring-black/30 scale-110' : 'border-black/20 hover:border-black/40'}`}
+                      className={`w-10 h-10 rounded-lg border-2 flex-shrink-0 transition-all ${(homeData.logoBackgroundColor ?? 'transparent') === value ? 'border-[#FF6B00] ring-2 ring-[#FF6B00]/50 scale-110' : 'border-white/20 hover:border-white/40'}`}
                       style={style || { backgroundColor: value }}
                       title={label}
                     >
                       {value === 'transparent' && (
-                        <span className="text-[8px] font-black text-black/70 w-full h-full flex items-center justify-center">T</span>
+                        <span className="text-[8px] font-black text-white/80 w-full h-full flex items-center justify-center">T</span>
                       )}
                     </button>
                   ))}
                 </div>
-                <p className="text-[9px] text-black/40 mt-2">선택: {homeData.logoBackgroundColor === 'transparent' ? '투명' : homeData.logoBackgroundColor}</p>
+                <p className="text-[9px] text-white/50 mt-2">선택: {homeData.logoBackgroundColor === 'transparent' ? '투명' : homeData.logoBackgroundColor}</p>
               </div>
             </div>
           </div>
@@ -192,8 +200,8 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         return (
           <div className="space-y-8">
             <div className="space-y-4">
-              <label className="text-[10px] font-black opacity-30 uppercase tracking-widest block">히어로 메인 이미지</label>
-              <label className="block w-full bg-black/5 border-2 border-dashed border-black/20 aspect-video flex flex-col items-center justify-center cursor-pointer hover:bg-black/10 transition-all relative overflow-hidden group">
+              <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block">히어로 메인 이미지</label>
+              <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 aspect-video flex flex-col items-center justify-center cursor-pointer hover:bg-white/10 transition-all relative overflow-hidden group text-white">
                 {homeData.heroImage ? (
                   <>
                     <img src={homeData.heroImage} className="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 transition-all" alt="Hero Preview" />
@@ -203,37 +211,37 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                   </>
                 ) : (
                   <div className="text-center space-y-2">
-                    <ImageIcon className="mx-auto opacity-20" size={32}/>
-                    <p className="text-[10px] font-black opacity-30">히어로 배경 이미지 업로드</p>
+                    <ImageIcon className="mx-auto opacity-30" size={32}/>
+                    <p className="text-[10px] font-black text-white/50">히어로 배경 이미지 업로드</p>
                   </div>
                 )}
                 <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ heroImage: img }), e)} />
               </label>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black opacity-30">태그</label>
+              <label className="text-[10px] font-black text-white/50">태그</label>
               <div className="flex items-center gap-2">
-                <input value={homeData.heroSmallTag} onChange={e => updateHomeData({ heroSmallTag: e.target.value })} className="flex-1 bg-transparent border-b border-black/20 p-2 text-sm font-bold" />
-                <select value={homeData.heroSmallTagFontSize ?? '10'} onChange={e => updateHomeData({ heroSmallTagFontSize: e.target.value })} className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold">
-                  {[8, 9, 10, 11, 12, 14, 16, 18, 20].map(sz => <option key={sz} value={sz}>{sz}px</option>)}
+                <input value={homeData.heroSmallTag} onChange={e => updateHomeData({ heroSmallTag: e.target.value })} className="flex-1 bg-transparent border-b border-white/20 p-2 text-sm font-bold text-white placeholder:text-white/40" />
+                <select value={homeData.heroSmallTagFontSize ?? '10'} onChange={e => updateHomeData({ heroSmallTagFontSize: e.target.value })} className="bg-white/10 border border-white/20 px-2 py-1 text-xs font-bold text-white">
+                  {[8, 9, 10, 11, 12, 14, 16, 18, 20].map(sz => <option key={sz} value={sz} className="bg-black text-white">{sz}px</option>)}
                 </select>
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black opacity-30">메인 타이틀</label>
+              <label className="text-[10px] font-black text-white/50">메인 타이틀</label>
               <div className="flex items-center gap-2">
-                <textarea value={homeData.mainTitle} onChange={e => updateHomeData({ mainTitle: e.target.value })} className="flex-1 bg-transparent border-b border-black/20 p-2 text-sm font-black italic h-24" />
-                <select value={homeData.mainTitleFontSize ?? '72'} onChange={e => updateHomeData({ mainTitleFontSize: e.target.value })} className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold self-start">
-                  {[24, 32, 40, 48, 56, 64, 72, 80, 96, 120].map(sz => <option key={sz} value={sz}>{sz}px</option>)}
+                <textarea value={homeData.mainTitle} onChange={e => updateHomeData({ mainTitle: e.target.value })} className="flex-1 bg-transparent border-b border-white/20 p-2 text-sm font-black italic h-24 text-white placeholder:text-white/40" />
+                <select value={homeData.mainTitleFontSize ?? '72'} onChange={e => updateHomeData({ mainTitleFontSize: e.target.value })} className="bg-white/10 border border-white/20 px-2 py-1 text-xs font-bold self-start text-white">
+                  {[24, 32, 40, 48, 56, 64, 72, 80, 96, 120].map(sz => <option key={sz} value={sz} className="bg-black text-white">{sz}px</option>)}
                 </select>
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black opacity-30">설명 문구</label>
+              <label className="text-[10px] font-black text-white/50">설명 문구</label>
               <div className="flex items-center gap-2">
-                <textarea value={homeData.description} onChange={e => updateHomeData({ description: e.target.value })} className="flex-1 bg-transparent border-b border-black/20 p-2 text-xs h-24" />
-                <select value={homeData.descriptionFontSize ?? '16'} onChange={e => updateHomeData({ descriptionFontSize: e.target.value })} className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold self-start">
-                  {[12, 14, 16, 18, 20, 22, 24].map(sz => <option key={sz} value={sz}>{sz}px</option>)}
+                <textarea value={homeData.description} onChange={e => updateHomeData({ description: e.target.value })} className="flex-1 bg-transparent border-b border-white/20 p-2 text-xs h-24 text-white placeholder:text-white/40" />
+                <select value={homeData.descriptionFontSize ?? '16'} onChange={e => updateHomeData({ descriptionFontSize: e.target.value })} className="bg-white/10 border border-white/20 px-2 py-1 text-xs font-bold self-start text-white">
+                  {[12, 14, 16, 18, 20, 22, 24].map(sz => <option key={sz} value={sz} className="bg-black text-white">{sz}px</option>)}
                 </select>
               </div>
             </div>
@@ -242,13 +250,13 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'logos':
         return (
           <div className="space-y-6">
-            <div className="flex justify-between items-center"><label className="text-[10px] font-black opacity-30 uppercase">파트너 로고 리스트</label>
-            <label className="bg-black text-[#FAF9F6] px-3 py-1 text-[10px] font-black cursor-pointer uppercase">Upload<input type="file" className="hidden" onChange={e => {
+            <div className="flex justify-between items-center"><label className="text-[10px] font-black text-white/50 uppercase">파트너 로고 리스트</label>
+            <label className="bg-[#FAF9F6] text-black px-3 py-1 text-[10px] font-black cursor-pointer uppercase">Upload<input type="file" className="hidden" onChange={e => {
               const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => updateHomeData({ partnerLogos: [...homeData.partnerLogos, ev.target?.result as string] }); r.readAsDataURL(file);
             }} /></label></div>
             <div className="grid grid-cols-3 gap-3">
               {homeData.partnerLogos.map((l, i) => (
-                <div key={i} className="relative group border border-black/10 p-2 bg-black/5 aspect-square flex items-center justify-center">
+                <div key={i} className="relative group border border-white/20 p-2 bg-white/5 aspect-square flex items-center justify-center">
                   <img src={l} className="max-h-full max-w-full grayscale" alt={`Partner ${i}`} />
                   <button onClick={() => updateHomeData({ partnerLogos: homeData.partnerLogos.filter((_, idx) => idx !== i) })} className="absolute -top-2 -right-2 bg-red-600 p-1 rounded-full text-white"><X size={10}/></button>
                 </div>
@@ -259,14 +267,14 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'about':
         return (
           <div className="space-y-6">
-            <div><label className="text-[10px] font-black opacity-30">섹션 태그</label><input value={homeData.aboutSmallTag} onChange={e => updateHomeData({ aboutSmallTag: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-xs font-bold" /></div>
-            <div><label className="text-[10px] font-black opacity-30">타이틀</label><textarea value={homeData.aboutTitle} onChange={e => updateHomeData({ aboutTitle: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-sm font-black h-20" /></div>
-            <div><label className="text-[10px] font-black opacity-30">설명</label><textarea value={homeData.aboutDescription} onChange={e => updateHomeData({ aboutDescription: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-xs h-32" /></div>
-            <div><label className="text-[10px] font-black opacity-30">태그 (쉼표 구분)</label><input value={homeData.aboutTags} onChange={e => updateHomeData({ aboutTags: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-[11px]" /></div>
-            <div><label className="text-[10px] font-black opacity-30">소개 카드 문구 (검은색 박스)</label><textarea value={homeData.aboutCardText} onChange={e => updateHomeData({ aboutCardText: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-xs h-24" /></div>
+            <div><label className="text-[10px] font-black text-white/50">섹션 태그</label><input value={homeData.aboutSmallTag} onChange={e => updateHomeData({ aboutSmallTag: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs font-bold text-white placeholder:text-white/40" /></div>
+            <div><label className="text-[10px] font-black text-white/50">타이틀</label><textarea value={homeData.aboutTitle} onChange={e => updateHomeData({ aboutTitle: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-sm font-black h-20 text-white placeholder:text-white/40" /></div>
+            <div><label className="text-[10px] font-black text-white/50">설명</label><textarea value={homeData.aboutDescription} onChange={e => updateHomeData({ aboutDescription: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-32 text-white placeholder:text-white/40" /></div>
+            <div><label className="text-[10px] font-black text-white/50">태그 (쉼표 구분)</label><input value={homeData.aboutTags} onChange={e => updateHomeData({ aboutTags: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-[11px] text-white placeholder:text-white/40" /></div>
+            <div><label className="text-[10px] font-black text-white/50">소개 카드 문구 (검은색 박스)</label><textarea value={homeData.aboutCardText} onChange={e => updateHomeData({ aboutCardText: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-24 text-white placeholder:text-white/40" /></div>
             <div>
-              <label className="text-[10px] font-black opacity-30 uppercase">소개 이미지</label>
-              <label className="block w-full bg-black/5 border-2 border-dashed border-black/20 py-8 text-center cursor-pointer hover:bg-black/10 mt-2">
+              <label className="text-[10px] font-black text-white/50 uppercase">소개 이미지</label>
+              <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-8 text-center cursor-pointer hover:bg-white/10 mt-2 text-white">
                 {homeData.aboutImage ? <img src={homeData.aboutImage} className="max-h-24 mx-auto" alt="About" /> : <ImageIcon className="mx-auto opacity-20" />}
                 <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ aboutImage: img }), e)} />
               </label>
@@ -276,31 +284,31 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'scope':
         return (
           <div className="space-y-10">
-            <div className="space-y-6 border-b border-black/10 pb-8">
+            <div className="space-y-6 border-b border-white/20 pb-8">
               <div>
-                <label className="text-[10px] font-black opacity-30 uppercase block mb-2">섹션 메인 타이틀</label>
+                <label className="text-[10px] font-black text-white/50 uppercase block mb-2">섹션 메인 타이틀</label>
                 <input 
                   value={homeData.servicesTitle} 
                   onChange={e => updateHomeData({ servicesTitle: e.target.value })} 
-                  className="w-full bg-transparent border-b border-black/20 p-2 text-sm font-black italic outline-none focus:border-black transition-all" 
+                  className="w-full bg-transparent border-b border-white/20 p-2 text-sm font-black italic outline-none text-white focus:border-[#FF6B00] transition-all placeholder:text-white/40" 
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black opacity-30 uppercase block mb-2">섹션 부제목 (설명)</label>
+                <label className="text-[10px] font-black text-white/50 uppercase block mb-2">섹션 부제목 (설명)</label>
                 <input 
                   value={homeData.servicesDescription} 
                   onChange={e => updateHomeData({ servicesDescription: e.target.value })} 
-                  className="w-full bg-transparent border-b border-black/20 p-2 text-xs font-bold outline-none focus:border-black transition-all" 
+                  className="w-full bg-transparent border-b border-white/20 p-2 text-xs font-bold outline-none text-white focus:border-[#FF6B00] transition-all placeholder:text-white/40" 
                   placeholder="넥스투 랩스의 전문 업무 범위"
                 />
               </div>
             </div>
 
             <div className="flex justify-between items-center pb-4">
-              <label className="text-[10px] font-black opacity-30 uppercase">업무 카테고리 설정</label>
+              <label className="text-[10px] font-black text-white/50 uppercase">업무 카테고리 설정</label>
               <button 
                 onClick={() => setScopeCategories([...scopeCategories, { id: `cat_${Date.now()}`, title: '새 카테고리', desc: '설명을 입력하세요' }])}
-                className="bg-black text-[#FAF9F6] px-3 py-1 text-[10px] font-black flex items-center gap-1.5"
+                className="bg-[#FAF9F6] text-black px-3 py-1 text-[10px] font-black flex items-center gap-1.5"
               >
                 <Plus size={12}/> ADD_CATEGORY
               </button>
@@ -308,10 +316,10 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             
             <div className="space-y-8">
               {scopeCategories.map((c, i) => (
-                <div key={c.id} className="p-5 bg-black/5 border border-black/10 relative group space-y-4">
-                  <button onClick={() => setScopeCategories(scopeCategories.filter(x => x.id !== c.id))} className="absolute top-2 right-2 text-red-500 opacity-20 group-hover:opacity-100 transition-all"><Trash2 size={14}/></button>
+                <div key={c.id} className="p-5 bg-white/5 border border-white/20 relative group space-y-4">
+                  <button onClick={() => setScopeCategories(scopeCategories.filter(x => x.id !== c.id))} className="absolute top-2 right-2 text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={14}/></button>
                   <div>
-                    <label className="text-[9px] font-black opacity-20 uppercase block mb-1">카테고리명</label>
+                    <label className="text-[9px] font-black text-white/40 uppercase block mb-1">카테고리명</label>
                     <input 
                       value={c.title} 
                       onChange={e => {
@@ -319,11 +327,11 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                         newList[i].title = e.target.value;
                         setScopeCategories(newList);
                       }} 
-                      className="w-full bg-transparent border-b border-black/10 text-[12px] font-black outline-none focus:border-black transition-all" 
+                      className="w-full bg-transparent border-b border-white/20 text-[12px] font-black outline-none text-white focus:border-[#FF6B00] transition-all" 
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] font-black opacity-20 uppercase block mb-1">카테고리 설명</label>
+                    <label className="text-[9px] font-black text-white/40 uppercase block mb-1">카테고리 설명</label>
                     <textarea 
                       value={c.desc} 
                       onChange={e => {
@@ -331,7 +339,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                         newList[i].desc = e.target.value;
                         setScopeCategories(newList);
                       }} 
-                      className="w-full bg-transparent border-b border-black/10 text-[10px] h-16 outline-none focus:border-black transition-all resize-none" 
+                      className="w-full bg-transparent border-b border-white/20 text-[10px] h-16 outline-none text-white focus:border-[#FF6B00] transition-all resize-none placeholder:text-white/40" 
                     />
                   </div>
                 </div>
@@ -342,37 +350,37 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'testimonials':
         return (
           <div className="space-y-6">
-            <div className="space-y-4 border-b border-black/10 pb-6">
-              <label className="text-[10px] font-black opacity-30 uppercase block">섹션 설명 문구</label>
+            <div className="space-y-4 border-b border-white/20 pb-6">
+              <label className="text-[10px] font-black text-white/50 uppercase block">섹션 설명 문구</label>
               <textarea 
                 value={homeData.testimonialsDescription} 
                 onChange={e => updateHomeData({ testimonialsDescription: e.target.value })} 
-                className="w-full bg-transparent border-b border-black/20 p-2 text-xs h-20 outline-none focus:border-black" 
+                className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-20 outline-none text-white focus:border-[#FF6B00] placeholder:text-white/40" 
                 placeholder="리뷰 섹션의 설명 문구를 입력하세요"
               />
             </div>
             
             <div className="flex justify-between items-center pt-4">
-              <label className="text-[10px] font-black opacity-30 uppercase">리뷰 리스트</label>
-              <button onClick={() => updateHomeData({ testimonials: [...homeData.testimonials, { name: '이름', role: '직함', text: '리뷰 내용', avatar: null }] })} className="bg-black text-[#FAF9F6] px-3 py-1 text-[10px] font-black">ADD</button>
+              <label className="text-[10px] font-black text-white/50 uppercase">리뷰 리스트</label>
+              <button onClick={() => updateHomeData({ testimonials: [...homeData.testimonials, { name: '이름', role: '직함', text: '리뷰 내용', avatar: null }] })} className="bg-[#FAF9F6] text-black px-3 py-1 text-[10px] font-black">ADD</button>
             </div>
             
             <div className="space-y-6">
               {homeData.testimonials.map((t, i) => (
-                <div key={i} className="p-6 border border-black/10 space-y-4 bg-black/5 relative group">
-                  <button onClick={() => updateHomeData({ testimonials: homeData.testimonials.filter((_, idx) => idx !== i) })} className="absolute top-2 right-2 text-red-500 opacity-20 group-hover:opacity-100"><Trash2 size={14}/></button>
+                <div key={i} className="p-6 border border-white/20 space-y-4 bg-white/5 relative group">
+                  <button onClick={() => updateHomeData({ testimonials: homeData.testimonials.filter((_, idx) => idx !== i) })} className="absolute top-2 right-2 text-red-400 opacity-60 group-hover:opacity-100"><Trash2 size={14}/></button>
                   
                   <div className="flex gap-6 items-start">
                     <div className="space-y-2">
-                      <label className="text-[9px] font-black opacity-20 uppercase block">아바타</label>
-                      <div className="w-14 h-14 bg-[#FAF9F6] border border-black/10 relative overflow-hidden flex items-center justify-center">
+                      <label className="text-[9px] font-black text-white/40 uppercase block">아바타</label>
+                      <div className="w-14 h-14 bg-white/10 border border-white/20 relative overflow-hidden flex items-center justify-center">
                         {t.avatar ? (
                           <img src={t.avatar} className="w-full h-full object-cover" alt="Avatar" />
                         ) : (
-                          <User size={24} className="opacity-20" />
+                          <User size={24} className="opacity-30 text-white" />
                         )}
                         <label className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
-                          <Upload size={16} className="text-[#FAF9F6]" />
+                          <Upload size={16} className="text-white" />
                           <input type="file" className="hidden" onChange={e => handleImgUpload(img => {
                             const list = [...homeData.testimonials];
                             list[i].avatar = img;
@@ -385,17 +393,17 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                           const list = [...homeData.testimonials];
                           list[i].avatar = null;
                           updateHomeData({ testimonials: list });
-                        }} className="text-[8px] font-black text-red-500 uppercase block">삭제</button>
+                        }} className="text-[8px] font-black text-red-400 uppercase block">삭제</button>
                       )}
                     </div>
                     
                     <div className="flex-1 space-y-3">
-                      <input value={t.name} onChange={e => { const list = [...homeData.testimonials]; list[i].name = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-black/10 text-[11px] font-black" placeholder="성함" />
-                      <input value={t.role} onChange={e => { const list = [...homeData.testimonials]; list[i].role = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-black/10 text-[10px] opacity-40 font-bold" placeholder="직함" />
+                      <input value={t.name} onChange={e => { const list = [...homeData.testimonials]; list[i].name = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/20 text-[11px] font-black text-white placeholder:text-white/40" placeholder="성함" />
+                      <input value={t.role} onChange={e => { const list = [...homeData.testimonials]; list[i].role = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/20 text-[10px] text-white/70 font-bold placeholder:text-white/40" placeholder="직함" />
                     </div>
                   </div>
                   
-                  <textarea value={t.text} onChange={e => { const list = [...homeData.testimonials]; list[i].text = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-black/10 text-[10px] h-20 outline-none" placeholder="리뷰 내용" />
+                  <textarea value={t.text} onChange={e => { const list = [...homeData.testimonials]; list[i].text = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/20 text-[10px] h-20 outline-none text-white placeholder:text-white/40" placeholder="리뷰 내용" />
                 </div>
               ))}
             </div>
@@ -404,14 +412,14 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'cta':
         return (
           <div className="space-y-6">
-            <div><label className="text-[10px] font-black opacity-30">CTA 타이틀</label><textarea value={homeData.ctaTitle} onChange={e => updateHomeData({ ctaTitle: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-sm font-black h-24" /></div>
-            <div><label className="text-[10px] font-black opacity-30">CTA 하단 태그</label><input value={homeData.ctaTag} onChange={e => updateHomeData({ ctaTag: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-[10px] font-bold" /></div>
+            <div><label className="text-[10px] font-black text-white/50">CTA 타이틀</label><textarea value={homeData.ctaTitle} onChange={e => updateHomeData({ ctaTitle: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-sm font-black h-24 text-white placeholder:text-white/40" /></div>
+            <div><label className="text-[10px] font-black text-white/50">CTA 하단 태그</label><input value={homeData.ctaTag} onChange={e => updateHomeData({ ctaTag: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-[10px] font-bold text-white placeholder:text-white/40" /></div>
             <div className="space-y-4">
-              <label className="text-[10px] font-black opacity-30">배경 비디오 URL (MP4)</label>
-              <input value={homeData.ctaVideo || ''} onChange={e => updateHomeData({ ctaVideo: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-[10px]" placeholder="https://example.com/video.mp4" />
-              <div className="bg-black/5 border border-black/10 p-4 space-y-2">
-                <p className="text-[9px] font-black uppercase tracking-widest text-black/40 flex items-center gap-2"><Video size={12}/> Recommended Video Specs</p>
-                <ul className="text-[8px] font-bold space-y-1 opacity-30 list-disc pl-4">
+              <label className="text-[10px] font-black text-white/50">배경 비디오 URL (MP4)</label>
+              <input value={homeData.ctaVideo || ''} onChange={e => updateHomeData({ ctaVideo: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-[10px] text-white placeholder:text-white/40" placeholder="https://example.com/video.mp4" />
+              <div className="bg-white/5 border border-white/20 p-4 space-y-2">
+                <p className="text-[9px] font-black uppercase tracking-widest text-white/50 flex items-center gap-2"><Video size={12}/> Recommended Video Specs</p>
+                <ul className="text-[8px] font-bold space-y-1 text-white/50 list-disc pl-4">
                   <li>Resolution: 1920x1080 (FHD) / 1280x720 (HD)</li>
                   <li>Aspect Ratio: 16:9 (Widescreen)</li>
                   <li>Format: MP4 (H.264 Codec)</li>
@@ -425,33 +433,33 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'contact':
         return (
           <div className="space-y-6">
-            <div><label className="text-[10px] font-black opacity-30">섹션 타이틀</label><input value={homeData.contactTitle} onChange={e => updateHomeData({ contactTitle: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 font-black" /></div>
-            <div><label className="text-[10px] font-black opacity-30">설명</label><textarea value={homeData.contactDescription} onChange={e => updateHomeData({ contactDescription: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-xs h-20" /></div>
-            <div><label className="text-[10px] font-black opacity-30">이메일</label><input value={homeData.contactEmail} onChange={e => updateHomeData({ contactEmail: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2" /></div>
-            <div><label className="text-[10px] font-black opacity-30">전화번호</label><input value={homeData.contactPhone} onChange={e => updateHomeData({ contactPhone: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2" /></div>
+            <div><label className="text-[10px] font-black text-white/50">섹션 타이틀</label><input value={homeData.contactTitle} onChange={e => updateHomeData({ contactTitle: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 font-black text-white placeholder:text-white/40" /></div>
+            <div><label className="text-[10px] font-black text-white/50">설명</label><textarea value={homeData.contactDescription} onChange={e => updateHomeData({ contactDescription: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-20 text-white placeholder:text-white/40" /></div>
+            <div><label className="text-[10px] font-black text-white/50">이메일</label><input value={homeData.contactEmail} onChange={e => updateHomeData({ contactEmail: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-white placeholder:text-white/40" /></div>
+            <div><label className="text-[10px] font-black text-white/50">전화번호</label><input value={homeData.contactPhone} onChange={e => updateHomeData({ contactPhone: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-white placeholder:text-white/40" /></div>
           </div>
         );
       case 'footer_info':
         return (
           <div className="space-y-10">
-            <div><label className="text-[10px] font-black opacity-30">푸터 정보 텍스트</label><textarea value={homeData.footerInfo} onChange={e => updateHomeData({ footerInfo: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-xs h-32" /></div>
+            <div><label className="text-[10px] font-black text-white/50">푸터 정보 텍스트</label><textarea value={homeData.footerInfo} onChange={e => updateHomeData({ footerInfo: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-32 text-white placeholder:text-white/40" /></div>
             
             <div className="space-y-4">
-              <div className="flex justify-between items-center"><label className="text-[10px] font-black opacity-30 uppercase">Quick Links</label><button onClick={() => updateHomeData({ footerQuickLinks: [...homeData.footerQuickLinks, { label: '새 링크', target: 'home' }] })} className="bg-black text-[#FAF9F6] px-2 py-0.5 text-[8px] font-black">ADD</button></div>
+              <div className="flex justify-between items-center"><label className="text-[10px] font-black text-white/50 uppercase">Quick Links</label><button onClick={() => updateHomeData({ footerQuickLinks: [...homeData.footerQuickLinks, { label: '새 링크', target: 'home' }] })} className="bg-[#FAF9F6] text-black px-2 py-0.5 text-[8px] font-black">ADD</button></div>
               {homeData.footerQuickLinks.map((link, i) => (
-                <div key={i} className="space-y-2 bg-black/5 p-3 border border-black/10 group">
+                <div key={i} className="space-y-2 bg-white/5 p-3 border border-white/20 group">
                   <div className="flex justify-between items-center">
-                    <span className="text-[8px] opacity-30 font-black uppercase">Link {i+1}</span>
-                    <button onClick={() => updateHomeData({ footerQuickLinks: homeData.footerQuickLinks.filter((_, idx) => idx !== i) })} className="text-red-500 opacity-20 group-hover:opacity-100 transition-all"><Trash2 size={12}/></button>
+                    <span className="text-[8px] text-white/50 font-black uppercase">Link {i+1}</span>
+                    <button onClick={() => updateHomeData({ footerQuickLinks: homeData.footerQuickLinks.filter((_, idx) => idx !== i) })} className="text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={12}/></button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <label className="text-[7px] font-black opacity-20 uppercase">Label</label>
-                      <input value={link.label} onChange={e => { const list = [...homeData.footerQuickLinks]; list[i].label = e.target.value; updateHomeData({ footerQuickLinks: list }); }} className="w-full bg-transparent text-[10px] font-bold border-b border-black/20 p-1 outline-none focus:border-black" />
+                      <label className="text-[7px] font-black text-white/40 uppercase">Label</label>
+                      <input value={link.label} onChange={e => { const list = [...homeData.footerQuickLinks]; list[i].label = e.target.value; updateHomeData({ footerQuickLinks: list }); }} className="w-full bg-transparent text-[10px] font-bold border-b border-white/20 p-1 outline-none text-white focus:border-[#FF6B00]" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[7px] font-black opacity-20 uppercase">URI / Target</label>
-                      <input value={link.target} onChange={e => { const list = [...homeData.footerQuickLinks]; list[i].target = e.target.value; updateHomeData({ footerQuickLinks: list }); }} className="w-full bg-transparent text-[10px] font-bold border-b border-black/20 p-1 outline-none focus:border-black" />
+                      <label className="text-[7px] font-black text-white/40 uppercase">URI / Target</label>
+                      <input value={link.target} onChange={e => { const list = [...homeData.footerQuickLinks]; list[i].target = e.target.value; updateHomeData({ footerQuickLinks: list }); }} className="w-full bg-transparent text-[10px] font-bold border-b border-white/20 p-1 outline-none text-white focus:border-[#FF6B00]" />
                     </div>
                   </div>
                 </div>
@@ -459,21 +467,21 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             </div>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center"><label className="text-[10px] font-black opacity-30 uppercase">Explore Links</label><button onClick={() => updateHomeData({ footerExploreLinks: [...homeData.footerExploreLinks, { label: '새 탐색', target: 'scope' }] })} className="bg-black text-[#FAF9F6] px-2 py-0.5 text-[8px] font-black">ADD</button></div>
+              <div className="flex justify-between items-center"><label className="text-[10px] font-black text-white/50 uppercase">Explore Links</label><button onClick={() => updateHomeData({ footerExploreLinks: [...homeData.footerExploreLinks, { label: '새 탐색', target: 'scope' }] })} className="bg-[#FAF9F6] text-black px-2 py-0.5 text-[8px] font-black">ADD</button></div>
               {homeData.footerExploreLinks.map((link, i) => (
-                <div key={i} className="space-y-2 bg-black/5 p-3 border border-black/10 group">
+                <div key={i} className="space-y-2 bg-white/5 p-3 border border-white/20 group">
                   <div className="flex justify-between items-center">
-                    <span className="text-[8px] opacity-30 font-black uppercase">Link {i+1}</span>
-                    <button onClick={() => updateHomeData({ footerExploreLinks: homeData.footerExploreLinks.filter((_, idx) => idx !== i) })} className="text-red-500 opacity-20 group-hover:opacity-100 transition-all"><Trash2 size={12}/></button>
+                    <span className="text-[8px] text-white/50 font-black uppercase">Link {i+1}</span>
+                    <button onClick={() => updateHomeData({ footerExploreLinks: homeData.footerExploreLinks.filter((_, idx) => idx !== i) })} className="text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={12}/></button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <label className="text-[7px] font-black opacity-20 uppercase">Label</label>
-                      <input value={link.label} onChange={e => { const list = [...homeData.footerExploreLinks]; list[i].label = e.target.value; updateHomeData({ footerExploreLinks: list }); }} className="w-full bg-transparent text-[10px] font-bold border-b border-black/20 p-1 outline-none focus:border-black" />
+                      <label className="text-[7px] font-black text-white/40 uppercase">Label</label>
+                      <input value={link.label} onChange={e => { const list = [...homeData.footerExploreLinks]; list[i].label = e.target.value; updateHomeData({ footerExploreLinks: list }); }} className="w-full bg-transparent text-[10px] font-bold border-b border-white/20 p-1 outline-none text-white focus:border-[#FF6B00]" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[7px] font-black opacity-20 uppercase">URI / Target</label>
-                      <input value={link.target} onChange={e => { const list = [...homeData.footerExploreLinks]; list[i].target = e.target.value; updateHomeData({ footerExploreLinks: list }); }} className="w-full bg-transparent text-[10px] font-bold border-b border-black/20 p-1 outline-none focus:border-black" />
+                      <label className="text-[7px] font-black text-white/40 uppercase">URI / Target</label>
+                      <input value={link.target} onChange={e => { const list = [...homeData.footerExploreLinks]; list[i].target = e.target.value; updateHomeData({ footerExploreLinks: list }); }} className="w-full bg-transparent text-[10px] font-bold border-b border-white/20 p-1 outline-none text-white focus:border-[#FF6B00]" />
                     </div>
                   </div>
                 </div>
@@ -485,41 +493,41 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         return (
           <div className="space-y-8">
             <div className="space-y-3">
-              <label className="text-[10px] font-black opacity-30">로그인 버튼</label>
+              <label className="text-[10px] font-black text-white/50">로그인 버튼</label>
               <div className="flex items-center gap-3">
                 <input 
                   value={homeData.loginButtonText} 
                   onChange={e => updateHomeData({ loginButtonText: e.target.value })} 
-                  className="flex-1 bg-transparent border-b border-black/20 p-2 text-xs font-bold" 
+                  className="flex-1 bg-transparent border-b border-white/20 p-2 text-xs font-bold text-white placeholder:text-white/40" 
                   placeholder="로그인"
                 />
                 <select 
                   value={homeData.loginButtonFontSize || '12'}
                   onChange={e => updateHomeData({ loginButtonFontSize: e.target.value })}
-                  className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold"
+                  className="bg-white/10 border border-white/20 px-2 py-1 text-xs font-bold text-white"
                 >
                   {[10, 11, 12, 13, 14, 15, 16, 18, 20].map(sz => (
-                    <option key={sz} value={sz}>{sz}px</option>
+                    <option key={sz} value={sz} className="bg-black text-white">{sz}px</option>
                   ))}
                 </select>
               </div>
             </div>
             <div className="space-y-3">
-              <label className="text-[10px] font-black opacity-30">시스템 상태</label>
+              <label className="text-[10px] font-black text-white/50">시스템 상태</label>
               <div className="flex items-center gap-3">
                 <input 
                   value={homeData.systemStatusText} 
                   onChange={e => updateHomeData({ systemStatusText: e.target.value })} 
-                  className="flex-1 bg-transparent border-b border-black/20 p-2 text-xs font-bold" 
+                  className="flex-1 bg-transparent border-b border-white/20 p-2 text-xs font-bold text-white placeholder:text-white/40" 
                   placeholder="시스템 정상 작동 중"
                 />
                 <select 
                   value={homeData.systemStatusFontSize || '10'}
                   onChange={e => updateHomeData({ systemStatusFontSize: e.target.value })}
-                  className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold"
+                  className="bg-white/10 border border-white/20 px-2 py-1 text-xs font-bold text-white"
                 >
                   {[8, 9, 10, 11, 12, 13, 14, 15, 16].map(sz => (
-                    <option key={sz} value={sz}>{sz}px</option>
+                    <option key={sz} value={sz} className="bg-black text-white">{sz}px</option>
                   ))}
                 </select>
               </div>
@@ -691,36 +699,36 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in text-black">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in text-white">
       {/* 1. 좌측 메인 관리 메뉴 */}
       <div className="lg:col-span-4 space-y-8">
-        <div className="bg-[#FAF9F6] p-8 brutal-border">
+        <div className="bg-black border border-white/20 p-8">
           <div className="grid grid-cols-1 gap-4">
-            <button onClick={() => setActiveTab('home')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'home' ? 'bg-black text-[#FAF9F6] border-black' : 'bg-transparent border-black/20 opacity-40 hover:opacity-100'}`}><LayoutGrid size={18} /> 홈페이지 섹션</button>
-            <button onClick={() => setActiveTab('members_mgmt')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'members_mgmt' ? 'bg-black text-[#FAF9F6] border-black' : 'bg-transparent border-black/20 opacity-40 hover:opacity-100'}`}><Users size={18} /> 팀원 관리</button>
-            <button onClick={() => setActiveTab('posts_mgmt')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'posts_mgmt' ? 'bg-black text-[#FAF9F6] border-black' : 'bg-transparent border-black/20 opacity-40 hover:opacity-100'}`}><BookOpen size={18} /> 포스트 관리</button>
+            <button onClick={() => setActiveTab('home')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'home' ? 'bg-[#FF6B00] text-white border-[#FF6B00]' : 'bg-transparent border-white/20 text-white/60 hover:text-white'}`}><LayoutGrid size={18} /> 홈페이지 섹션</button>
+            <button onClick={() => setActiveTab('members_mgmt')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'members_mgmt' ? 'bg-[#FF6B00] text-white border-[#FF6B00]' : 'bg-transparent border-white/20 text-white/60 hover:text-white'}`}><Users size={18} /> 팀원 관리</button>
+            <button onClick={() => setActiveTab('posts_mgmt')} className={`w-full text-left p-6 font-black uppercase tracking-widest flex items-center gap-4 border-2 transition-all ${activeTab === 'posts_mgmt' ? 'bg-[#FF6B00] text-white border-[#FF6B00]' : 'bg-transparent border-white/20 text-white/60 hover:text-white'}`}><BookOpen size={18} /> 포스트 관리</button>
           </div>
         </div>
 
         {/* 하위 편집 도구 영역 */}
         <div className="max-h-[65vh] overflow-y-auto custom-scrollbar pr-2 space-y-8">
           {activeTab === 'home' && (
-            <div className="bg-[#FAF9F6] p-8 brutal-border space-y-8">
+            <div className="bg-black border border-white/20 p-8 space-y-8">
               <div className="grid grid-cols-2 gap-2">
                 {displayTabs.map((t, idx) => (
-                  <div key={t.id} draggable onDragStart={(e) => onDragStart(e, idx)} onDragOver={onDragOver} onDrop={(e) => onDrop(e, idx)} className={`flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest border-2 cursor-move transition-all ${homeSubTab === t.id ? 'bg-black text-[#FAF9F6] border-black' : 'border-black/10 opacity-60 hover:opacity-100'}`}>
+                  <div key={t.id} draggable onDragStart={(e) => onDragStart(e, idx)} onDragOver={onDragOver} onDrop={(e) => onDrop(e, idx)} className={`flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest border-2 cursor-move transition-all ${homeSubTab === t.id ? 'bg-[#FF6B00] text-white border-[#FF6B00]' : 'border-white/20 text-white/60 hover:text-white'}`}>
                     <div onClick={() => setHomeSubTab(t.id)} className="flex items-center gap-2 w-full"><GripVertical size={14} className="opacity-20" /><t.icon size={14} /> {t.label}</div>
                   </div>
                 ))}
               </div>
 
-              <div className="pt-8 border-t border-black/10 relative">
+              <div className="pt-8 border-t border-white/10 relative">
                 {renderEditor()}
-                <div className="mt-12 pt-8 border-t border-black/10">
+                <div className="mt-12 pt-8 border-t border-white/10">
                    <button 
                     onClick={handleManualSave}
                     disabled={isSaving}
-                    className="w-full bg-black text-[#FAF9F6] py-5 font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-3 transition-all hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
+                    className="w-full bg-[#FAF9F6] text-black py-5 font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-3 transition-all hover:bg-[#e8e6e1] active:scale-95 disabled:opacity-50"
                    >
                      {isSaving ? <Loader2 className="animate-spin" size={16} /> : saveSuccess ? <Check className="text-green-600" size={16} /> : <Save size={16} />}
                      {isSaving ? '저장 중...' : saveSuccess ? '저장 완료!' : '현재 설정 저장하기'}
@@ -730,76 +738,76 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             </div>
           )}
           {activeTab === 'members_mgmt' && (
-            <div className="bg-[#FAF9F6] p-8 brutal-border space-y-12">
+            <div className="bg-black border border-white/20 p-8 space-y-12">
               <div className="space-y-6">
-                <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-black/10 pb-4">팀 페이지 공통 문구 설정</h3>
+                <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-white/20 pb-4">팀 페이지 공통 문구 설정</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[9px] font-black opacity-30 block mb-1">메인 타이틀</label>
-                    <textarea value={homeData.teamHeroTitle} onChange={e => updateHomeData({ teamHeroTitle: e.target.value })} className="w-full bg-transparent border-b border-black/10 text-[12px] font-black h-20 outline-none" />
+                    <label className="text-[9px] font-black text-white/50 block mb-1">메인 타이틀</label>
+                    <textarea value={homeData.teamHeroTitle} onChange={e => updateHomeData({ teamHeroTitle: e.target.value })} className="w-full bg-transparent border-b border-white/20 text-[12px] font-black h-20 outline-none text-white" placeholder="메인 타이틀" />
                   </div>
                   <div>
-                    <label className="text-[9px] font-black opacity-30 block mb-1">설명 문구</label>
-                    <textarea value={homeData.teamHeroDescription} onChange={e => updateHomeData({ teamHeroDescription: e.target.value })} className="w-full bg-transparent border-b border-black/10 text-[10px] h-24 outline-none" />
+                    <label className="text-[9px] font-black text-white/50 block mb-1">설명 문구</label>
+                    <textarea value={homeData.teamHeroDescription} onChange={e => updateHomeData({ teamHeroDescription: e.target.value })} className="w-full bg-transparent border-b border-white/20 text-[10px] h-24 outline-none text-white" placeholder="설명" />
                   </div>
                 </div>
               </div>
               <div className="space-y-8">
-                <div className="flex justify-between items-center border-b border-black/10 pb-4">
+                <div className="flex justify-between items-center border-b border-white/20 pb-4">
                   <h3 className="text-[11px] font-black uppercase tracking-widest">TEAM_MEMBERS 리스트</h3>
-                  <button onClick={() => setHomeData(prev => ({ ...prev, members: [...prev.members, { id: `m_${Date.now()}`, name: '새 멤버', role: '직함', bio: '소개글', image: null }] }))} className="bg-black text-[#FAF9F6] px-3 py-1 text-[10px] font-black">ADD_MEMBER</button>
+                  <button onClick={() => setHomeData(prev => ({ ...prev, members: [...prev.members, { id: `m_${Date.now()}`, name: '새 멤버', role: '직함', bio: '소개글', image: null }] }))} className="bg-[#FAF9F6] text-black px-3 py-1 text-[10px] font-black">ADD_MEMBER</button>
                 </div>
                 <div className="space-y-6">
                   {homeData.members.map((m, i) => (
-                    <div key={m.id} className="p-4 bg-black/5 border border-black/10 group relative space-y-4">
-                      <button onClick={() => setHomeData(prev => ({ ...prev, members: prev.members.filter(x => x.id !== m.id) }))} className="absolute top-2 right-2 text-red-500 opacity-20 group-hover:opacity-100 transition-all"><Trash2 size={14}/></button>
-                      <input value={m.name} onChange={e => updateMember(m.id, { name: e.target.value })} className="w-full bg-transparent border-b border-black/10 text-[12px] font-black" placeholder="이름" />
-                      <input value={m.role} onChange={e => updateMember(m.id, { role: e.target.value })} className="w-full bg-transparent border-b border-black/10 text-[10px] opacity-40 font-bold" placeholder="직함" />
-                      <textarea value={m.bio} onChange={e => updateMember(m.id, { bio: e.target.value })} className="w-full bg-transparent border-b border-black/10 text-[10px] h-16 resize-none" placeholder="소개글" />
+                    <div key={m.id} className="p-4 bg-white/5 border border-white/20 group relative space-y-4">
+                      <button onClick={() => setHomeData(prev => ({ ...prev, members: prev.members.filter(x => x.id !== m.id) }))} className="absolute top-2 right-2 text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={14}/></button>
+                      <input value={m.name} onChange={e => updateMember(m.id, { name: e.target.value })} className="w-full bg-transparent border-b border-white/20 text-[12px] font-black text-white" placeholder="이름" />
+                      <input value={m.role} onChange={e => updateMember(m.id, { role: e.target.value })} className="w-full bg-transparent border-b border-white/20 text-[10px] text-white/70 font-bold" placeholder="직함" />
+                      <textarea value={m.bio} onChange={e => updateMember(m.id, { bio: e.target.value })} className="w-full bg-transparent border-b border-white/20 text-[10px] h-16 resize-none text-white" placeholder="소개글" />
                       <div>
-                        <label className="text-[9px] font-black opacity-30 block mb-1">멤버 이미지</label>
-                        <input type="file" className="text-[9px]" onChange={e => handleImgUpload(img => updateMember(m.id, { image: img }), e)} />
+                        <label className="text-[9px] font-black text-white/50 block mb-1">멤버 이미지</label>
+                        <input type="file" className="text-[9px] text-white/80" onChange={e => handleImgUpload(img => updateMember(m.id, { image: img }), e)} />
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <button onClick={handleManualSave} className="w-full bg-black text-[#FAF9F6] py-5 font-black text-[11px] uppercase tracking-widest mt-8">멤버 설정 저장하기</button>
+              <button onClick={handleManualSave} className="w-full bg-[#FAF9F6] text-black py-5 font-black text-[11px] uppercase tracking-widest mt-8">멤버 설정 저장하기</button>
             </div>
           )}
           {activeTab === 'posts_mgmt' && (
             <div className="space-y-10">
-              <div className="bg-[#FAF9F6] p-8 brutal-border space-y-6">
-                 <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-black/10 pb-4">새 포스트 작성</h3>
+              <div className="bg-black border border-white/20 p-8 space-y-6">
+                 <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-white/20 pb-4">새 포스트 작성</h3>
                  <div className="space-y-4">
                    <div>
-                     <label className="text-[9px] font-black opacity-30 block mb-1">카테고리 선택</label>
-                     <select value={newPost.category} onChange={e => setNewPost({...newPost, category: e.target.value})} className="w-full bg-[#FAF9F6] border border-black/20 p-3 text-[11px] font-bold outline-none text-black">
+                     <label className="text-[9px] font-black text-white/50 block mb-1">카테고리 선택</label>
+                     <select value={newPost.category} onChange={e => setNewPost({...newPost, category: e.target.value})} className="w-full bg-white/10 border border-white/20 p-3 text-[11px] font-bold outline-none text-white">
                        <option value="">카테고리를 선택하세요</option>
-                       {scopeCategories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                       {scopeCategories.map(c => <option key={c.id} value={c.id} className="bg-black text-white">{c.title}</option>)}
                      </select>
                    </div>
-                   <input placeholder="포스트 제목" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-transparent border-b border-black/20 py-2 text-xs font-bold" />
-                   <textarea placeholder="포스트 내용" value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-transparent border-b border-black/20 py-2 text-xs h-32" />
+                   <input placeholder="포스트 제목" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-transparent border-b border-white/20 py-2 text-xs font-bold text-white placeholder:text-white/40" />
+                   <textarea placeholder="포스트 내용" value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-transparent border-b border-white/20 py-2 text-xs h-32 text-white placeholder:text-white/40" />
                    <div className="space-y-2">
-                     <label className="block text-[9px] font-black opacity-30">이미지 첨부</label>
-                     <input type="file" className="text-[10px]" onChange={e => handleImgUpload(img => setNewPost({...newPost, imageUrl: img}), e)} />
+                     <label className="block text-[9px] font-black text-white/50">이미지 첨부</label>
+                     <input type="file" className="text-[10px] text-white/80" onChange={e => handleImgUpload(img => setNewPost({...newPost, imageUrl: img}), e)} />
                    </div>
-                   <button onClick={handleSavePost} className="w-full bg-black text-[#FAF9F6] py-4 font-black text-xs uppercase tracking-widest hover:bg-neutral-800">포스트 저장</button>
+                   <button onClick={handleSavePost} className="w-full bg-[#FAF9F6] text-black py-4 font-black text-xs uppercase tracking-widest hover:bg-[#e8e6e1]">포스트 저장</button>
                  </div>
               </div>
-              <div className="bg-[#FAF9F6] p-8 brutal-border space-y-6">
-                 <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-black/10 pb-4">등록된 포스트 목록</h3>
+              <div className="bg-black border border-white/20 p-8 space-y-6">
+                 <h3 className="text-[11px] font-black uppercase tracking-widest border-b border-white/20 pb-4">등록된 포스트 목록</h3>
                  <div className="space-y-3">
                    {scopePosts.map(p => {
                      const cat = scopeCategories.find(c => c.id === p.category);
                      return (
-                       <div key={p.id} className="flex justify-between items-center p-4 bg-black/5 border border-black/5 group hover:border-black/20 transition-all">
+                       <div key={p.id} className="flex justify-between items-center p-4 bg-white/5 border border-white/10 group hover:border-white/20 transition-all">
                          <div className="truncate">
-                           <p className="text-[8px] font-black opacity-30 uppercase mb-1">{cat?.title || 'Unknown'}</p>
-                           <span className="text-[11px] font-bold italic">{p.title}</span>
+                           <p className="text-[8px] font-black text-white/50 uppercase mb-1">{cat?.title || 'Unknown'}</p>
+                           <span className="text-[11px] font-bold italic text-white">{p.title}</span>
                          </div>
-                         <button onClick={() => deletePost(p.id)} className="text-red-500 opacity-20 group-hover:opacity-100 transition-all"><Trash2 size={14} /></button>
+                         <button onClick={() => deletePost(p.id)} className="text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={14} /></button>
                        </div>
                      );
                    })}
@@ -812,26 +820,49 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
 
       {/* 2. 우측 실시간 미리보기 */}
       <div className="lg:col-span-8 space-y-10">
-        <div className="bg-[#FAF9F6] border-2 border-black brutal-shadow min-h-[750px] p-12 overflow-y-auto max-h-[85vh] custom-scrollbar">
-          <div className="border-b border-black/10 pb-6 mb-12 flex justify-between items-center">
-             <h3 className="editorial-title text-4xl italic uppercase">
+        <div className="bg-black border-2 border-white/20 min-h-[750px] p-12 overflow-y-auto max-h-[85vh] custom-scrollbar">
+          <div className="border-b border-white/20 pb-6 mb-12 flex justify-between items-center">
+             <h3 className="editorial-title text-4xl italic uppercase text-white">
                PREVIEW: {activeTab === 'home' ? homeSubTab : activeTab === 'members_mgmt' ? 'TEAM_PAGE' : 'POSTS'}
              </h3>
              <div className="flex items-center gap-4">
-                {saveSuccess && <span className="text-[9px] font-black text-green-500 animate-pulse">CHANGES_SAVED_LOCALLY</span>}
-                <span className="text-[10px] font-black opacity-20 uppercase tracking-[0.4em]">Live Visualizer</span>
+                {saveSuccess && <span className="text-[9px] font-black text-green-400 animate-pulse">CHANGES_SAVED_LOCALLY</span>}
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">Live Visualizer</span>
              </div>
           </div>
 
-          <div className="animate-fade-in text-center p-16 border border-black/5 bg-black/5 min-h-[550px] rounded-[3rem] flex flex-col items-center justify-center relative overflow-hidden">
+          <div className="animate-fade-in text-center p-16 border border-white/10 bg-white/5 min-h-[550px] rounded-[3rem] flex flex-col items-center justify-center relative overflow-hidden">
              {activeTab === 'home' ? renderPreview() : activeTab === 'members_mgmt' ? (
                 <div className="w-full scale-[0.6] origin-top">
                   <TeamView data={homeData} onBack={() => {}} />
                 </div>
              ) : (
-               <div className="py-20 opacity-20 italic space-y-4">
-                 <div className="flex justify-center"><BookOpen size={48}/></div>
-                 <p className="text-[12px] font-black uppercase tracking-widest">Post management mode is focused on indexing.</p>
+               <div className="w-full text-left space-y-6 max-h-[520px] overflow-y-auto custom-scrollbar pr-2">
+                 {scopePosts.length === 0 ? (
+                   <div className="py-20 text-center text-white/40 italic space-y-4">
+                     <BookOpen size={48} className="mx-auto opacity-50" />
+                     <p className="text-[12px] font-black uppercase tracking-widest">등록된 포스트가 없습니다.</p>
+                   </div>
+                 ) : (
+                   scopePosts.map((post) => {
+                     const cat = scopeCategories.find(c => c.id === post.category);
+                     return (
+                       <article key={post.id} className="p-6 border border-white/10 bg-white/5 rounded-xl space-y-3 group">
+                         <div className="flex items-center gap-3 text-[9px] font-black text-[#FF6B00] uppercase tracking-widest">
+                           <Clock size={12} />
+                           {cat?.title ?? post.category} · {new Date(post.createdAt).toLocaleDateString()}
+                         </div>
+                         <h3 className="text-lg font-black uppercase italic text-white">{post.title}</h3>
+                         {post.imageUrl && (
+                           <div className="w-full h-32 overflow-hidden rounded-lg border border-white/20">
+                             <img src={post.imageUrl} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all" alt="" />
+                           </div>
+                         )}
+                         <p className="text-sm text-white/70 leading-relaxed line-clamp-3">{post.content}</p>
+                       </article>
+                     );
+                   })
+                 )}
                </div>
              )}
           </div>
