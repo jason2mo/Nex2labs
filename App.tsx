@@ -36,7 +36,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.title = homeData.pageTitle || `${homeData.brandName} | 시스템`;
-  }, [homeData.brandName]);
+  }, [homeData.brandName, homeData.pageTitle]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
