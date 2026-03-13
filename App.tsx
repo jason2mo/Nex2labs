@@ -244,7 +244,7 @@ const App: React.FC = () => {
         
         <div className="flex items-center gap-4 md:gap-8 h-full">
           {!session ? (
-            <button type="button" onClick={() => handleNavigate('login')} className="btn-block flex items-center gap-2 px-5 md:px-8 py-3 md:py-4">
+            <button type="button" onClick={() => handleNavigate('login')} className="btn-block flex items-center gap-2 px-4 md:px-7 py-2.5 md:py-3.5">
               <Key size={14}/> <span className="hidden xs:inline">{homeData.loginButtonText}</span><span className="xs:hidden">LOGIN</span>
             </button>
           ) : (
