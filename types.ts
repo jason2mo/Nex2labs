@@ -122,7 +122,9 @@ export interface HomeData {
   footerExploreLinks: FooterLink[];
   mgmtPreviewLabel: string;
   loginButtonText: string;
+  loginButtonFontSize: string;
   systemStatusText: string;
+  systemStatusFontSize: string;
   sectionOrder: string[]; 
   members: MemberItem[];
   teamHeroTitle: string;

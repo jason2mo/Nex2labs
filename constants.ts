@@ -76,7 +76,9 @@ export const DEFAULT_HOME_DATA = {
   ],
   mgmtPreviewLabel: "PREVIEW",
   loginButtonText: "로그인",
+  loginButtonFontSize: "12",
   systemStatusText: "시스템 정상 작동 중",
+  systemStatusFontSize: "10",
   sectionOrder: ['hero', 'logos', 'about', 'scope', 'testimonials', 'cta', 'footer_info'],
   members: [
     { id: 'm1', name: '김넥스투', role: 'Chief Engineer', bio: '시스템 아키텍처 및 보안 전문가', image: null },

@@ -246,7 +246,7 @@ const App: React.FC = () => {
         
         <div className="flex items-center gap-4 md:gap-8 h-full">
           {!session ? (
-            <button type="button" onClick={() => handleNavigate('login')} className="btn-block flex items-center gap-2 px-4 md:px-7 py-2.5 md:py-3.5">
+            <button type="button" onClick={() => handleNavigate('login')} className="btn-block flex items-center gap-2 px-4 md:px-7 py-2.5 md:py-3.5" style={{ fontSize: `${homeData.loginButtonFontSize || 12}px` }}>
               <Key size={14}/> <span className="hidden xs:inline">{homeData.loginButtonText}</span><span className="xs:hidden">LOGIN</span>
             </button>
           ) : (
@@ -357,7 +357,7 @@ const App: React.FC = () => {
 
       <footer className="bg-black text-white py-6 md:h-16 flex flex-col md:flex-row items-center px-6 md:px-12 justify-between text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.5em] uppercase border-t border-white/10 gap-4">
         <div className="flex items-center gap-6 md:gap-12">
-           <span className="flex items-center gap-3">
+           <span className="flex items-center gap-3" style={{ fontSize: `${homeData.systemStatusFontSize || 10}px` }}>
              <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#FF6B00] rounded-full animate-pulse shadow-[0_0_8px_#FF6B00]"></span> 
              {homeData.systemStatusText}
            </span>

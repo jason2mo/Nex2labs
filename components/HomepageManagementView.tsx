@@ -459,9 +459,47 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         );
       case 'mgmt':
         return (
-          <div className="space-y-6">
-            <div><label className="text-[10px] font-black opacity-30">로그인 버튼 문구</label><input value={homeData.loginButtonText} onChange={e => updateHomeData({ loginButtonText: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-xs font-bold" /></div>
-            <div><label className="text-[10px] font-black opacity-30">시스템 상태 문구</label><input value={homeData.systemStatusText} onChange={e => updateHomeData({ systemStatusText: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-xs font-bold" /></div>
+          <div className="space-y-8">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black opacity-30">로그인 버튼</label>
+              <div className="flex items-center gap-3">
+                <input 
+                  value={homeData.loginButtonText} 
+                  onChange={e => updateHomeData({ loginButtonText: e.target.value })} 
+                  className="flex-1 bg-transparent border-b border-black/20 p-2 text-xs font-bold" 
+                  placeholder="로그인"
+                />
+                <select 
+                  value={homeData.loginButtonFontSize || '12'}
+                  onChange={e => updateHomeData({ loginButtonFontSize: e.target.value })}
+                  className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold"
+                >
+                  {[10, 11, 12, 13, 14, 15, 16, 18, 20].map(sz => (
+                    <option key={sz} value={sz}>{sz}px</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black opacity-30">시스템 상태</label>
+              <div className="flex items-center gap-3">
+                <input 
+                  value={homeData.systemStatusText} 
+                  onChange={e => updateHomeData({ systemStatusText: e.target.value })} 
+                  className="flex-1 bg-transparent border-b border-black/20 p-2 text-xs font-bold" 
+                  placeholder="시스템 정상 작동 중"
+                />
+                <select 
+                  value={homeData.systemStatusFontSize || '10'}
+                  onChange={e => updateHomeData({ systemStatusFontSize: e.target.value })}
+                  className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold"
+                >
+                  {[8, 9, 10, 11, 12, 13, 14, 15, 16].map(sz => (
+                    <option key={sz} value={sz}>{sz}px</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         );
       default: return null;
@@ -602,8 +640,16 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'mgmt':
         return (
           <div className="flex flex-col items-center justify-center min-h-[300px] gap-8 py-20">
-            <button className="bg-black text-[#FAF9F6] px-10 py-4 font-black text-xs uppercase tracking-widest">{homeData.loginButtonText}</button>
-            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] opacity-30">
+            <button 
+              className="bg-black text-[#FAF9F6] px-10 py-4 font-black uppercase tracking-widest"
+              style={{ fontSize: `${homeData.loginButtonFontSize || 12}px` }}
+            >
+              {homeData.loginButtonText}
+            </button>
+            <div 
+              className="flex items-center gap-3 font-black uppercase tracking-[0.4em] opacity-30"
+              style={{ fontSize: `${homeData.systemStatusFontSize || 10}px` }}
+            >
               <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
               {homeData.systemStatusText}
             </div>
