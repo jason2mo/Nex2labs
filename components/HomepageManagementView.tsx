@@ -207,6 +207,26 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             <div className="pt-8 border-t border-white/10">
               <h4 className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-4">로딩 화면 (진입 시)</h4>
               <p className="text-[9px] text-white/50 mb-3">상단에는 위 메인 로고가 표시됩니다. 로고가 없으면 브랜드 이름이 표시됩니다.</p>
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block">로딩 화면 로고</label>
+                  {homeData.loadingLogo && (
+                    <button onClick={() => updateHomeData({ loadingLogo: null })} className="text-[9px] font-black text-red-400 uppercase">로고 삭제</button>
+                  )}
+                </div>
+                <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-6 text-center cursor-pointer hover:bg-white/10 transition-all group overflow-hidden relative text-white">
+                  {homeData.loadingLogo ? (
+                    <img src={homeData.loadingLogo} className="max-h-12 mx-auto object-contain" alt="Loading Logo" />
+                  ) : (
+                    <div className="space-y-2">
+                      <ImageIcon className="mx-auto opacity-30" size={24}/>
+                      <p className="text-[9px] font-black text-white/50">클릭하여 로고 업로드</p>
+                    </div>
+                  )}
+                  <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ loadingLogo: img }), e)} />
+                </label>
+                <p className="text-[9px] text-white/50 mt-1">설정하면 메인 로고 대신 이 로고가 표시됩니다.</p>
+              </div>
               <div>
                 <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block mb-2">로딩 화면 하단 문구</label>
                 <input 

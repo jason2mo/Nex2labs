@@ -3,19 +3,22 @@ import React from 'react';
 interface LoadingOverlayProps {
   brandName?: string;
   logoImage?: string | null;
+  loadingLogo?: string | null;
   loadingSubtext?: string;
 }
 
 const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   brandName = "NexTo Labs",
   logoImage = null,
+  loadingLogo = null,
   loadingSubtext = "BOOTING INFRASTRUCTURE"
 }) => {
+  const displayLogo = loadingLogo ?? logoImage;
   return (
     <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-white">
       <div className="mb-8 flex justify-center">
-        {logoImage ? (
-          <img src={logoImage} alt={brandName} className="max-h-16 md:max-h-20 w-auto object-contain" />
+        {displayLogo ? (
+          <img src={displayLogo} alt={brandName} className="max-h-16 md:max-h-20 w-auto object-contain" />
         ) : (
           <h1 className="big-title text-4xl md:text-5xl italic">{brandName}.</h1>
         )}

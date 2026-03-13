@@ -80,6 +80,7 @@ export const DEFAULT_HOME_DATA = {
   ],
   mgmtPreviewLabel: "PREVIEW",
   loadingSubtext: "BOOTING INFRASTRUCTURE",
+  loadingLogo: null,
   loginButtonText: "로그인",
   loginButtonFontSize: "12",
   systemStatusText: "시스템 정상 작동 중",

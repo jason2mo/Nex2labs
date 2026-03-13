@@ -126,6 +126,7 @@ export interface HomeData {
   footerExploreLinks: FooterLink[];
   mgmtPreviewLabel: string;
   loadingSubtext: string;
+  loadingLogo: string | null;
   loginButtonText: string;
   loginButtonFontSize: string;
   systemStatusText: string;
