@@ -225,7 +225,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-[#FAF9F6] flex flex-col font-sans selection:bg-black selection:text-white text-black">
       {!isAppReady && <LoadingOverlay brandName={homeData.brandName} />}
       
-      <nav className="bg-[#FAF9F6] border-b border-black/20 sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
+      <nav className="bg-black border-b border-white/20 sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
         <div className="flex items-center gap-4 md:gap-12 h-full">
           <button 
             type="button" 
@@ -237,14 +237,14 @@ const App: React.FC = () => {
           
           <div className="hidden lg:flex gap-8 h-full items-center">
             {session && session.type === 'customer' && (
-              <button type="button" onClick={() => handleNavigate('collection')} className={`text-[11px] font-black uppercase tracking-[0.3em] transition-all h-full flex items-center border-b-2 ${currentView === 'collection' ? 'border-black opacity-100' : 'border-transparent opacity-30 hover:opacity-100'}`}>컬렉션</button>
+              <button type="button" onClick={() => handleNavigate('collection')} className={`text-[11px] font-black uppercase tracking-[0.3em] transition-all h-full flex items-center border-b-2 text-white ${currentView === 'collection' ? 'border-white opacity-100' : 'border-transparent opacity-50 hover:opacity-100'}`}>컬렉션</button>
             )}
           </div>
         </div>
         
         <div className="flex items-center gap-4 md:gap-8 h-full">
           {!session ? (
-            <button type="button" onClick={() => handleNavigate('login')} className="flex items-center gap-2 bg-white text-red-950 px-4 md:px-6 py-2 md:py-2.5 font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-neutral-200 transition-all shadow-[4px_4px_0_0_rgba(255,255,255,0.1)]">
+            <button type="button" onClick={() => handleNavigate('login')} className="flex items-center gap-2 bg-white text-black px-4 md:px-6 py-2 md:py-2.5 font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-neutral-200 transition-all">
               <Key size={14}/> <span className="hidden xs:inline">{homeData.loginButtonText}</span><span className="xs:hidden">LOGIN</span>
             </button>
           ) : (
@@ -252,22 +252,22 @@ const App: React.FC = () => {
               <button 
                 type="button" 
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center gap-3 md:gap-6 h-12 md:h-16 px-3 md:px-6 bg-black/5 border-0 outline-none hover:bg-black/10 transition-all rounded-full group active:scale-95 relative"
+                className="flex items-center gap-3 md:gap-6 h-12 md:h-16 px-3 md:px-6 bg-white/10 border-0 outline-none hover:bg-white/20 transition-all rounded-full group active:scale-95 relative"
               >
                 {session.type === 'admin' && unreadInquiriesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-black rounded-full animate-pulse flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 bg-[#FAF9F6] rounded-full"></span>
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full animate-pulse flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 bg-black rounded-full"></span>
                   </span>
                 )}
                 <div className="text-right hidden sm:block">
-                  <p className="editorial-title text-xl md:text-2xl italic leading-none text-black tracking-tighter uppercase group-hover:neo-gradient-text transition-all">{session.data?.name}</p>
-                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.1em] opacity-30 mt-1">{session.type === 'admin' ? '시스템 관리자' : '인증된 고객'}</p>
+                  <p className="editorial-title text-xl md:text-2xl italic leading-none text-white tracking-tighter uppercase group-hover:opacity-90 transition-all">{session.data?.name}</p>
+                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.1em] text-white/60 mt-1">{session.type === 'admin' ? '시스템 관리자' : '인증된 고객'}</p>
                 </div>
-                <div className="sm:hidden w-8 h-8 bg-black/10 rounded-full flex items-center justify-center">
+                <div className="sm:hidden w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white">
                   <User size={16} />
                 </div>
                 <div className={`transition-transform duration-500 ${isProfileMenuOpen ? 'rotate-180' : ''}`}>
-                  <ChevronDown size={18} md:size={20} className="opacity-40 group-hover:opacity-100" />
+                  <ChevronDown size={18} md:size={20} className="text-white opacity-60 group-hover:opacity-100" />
                 </div>
               </button>
 
