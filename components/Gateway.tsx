@@ -45,7 +45,7 @@ const Gateway: React.FC<GatewayProps> = ({ brandName, logo, customers, admins, o
         <div className="text-center flex flex-col items-center">
           <div className="px-10 py-5 transition-all">
             {logo ? (
-              <img src={logo} className="max-h-24 mx-auto object-contain" alt={brandName} />
+              <img src={logo} className="max-h-[91px] mx-auto object-contain" alt={brandName} />
             ) : (
               <div className="bg-black px-10 py-5 brutal-border shadow-[10px_10px_0_0_black]">
                 <h1 className="editorial-title text-5xl leading-none text-[#FAF9F6] tracking-tighter uppercase">{brandName}</h1>
