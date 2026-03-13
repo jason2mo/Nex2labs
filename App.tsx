@@ -232,7 +232,7 @@ const App: React.FC = () => {
             onClick={() => handleNavigate('home')} 
             className="px-2 py-2 group hover:opacity-70 transition-all"
           >
-             <img src={homeData.logoImage || '/logo.png'} className="h-8 md:h-10 max-w-[140px] md:max-w-[180px] w-auto object-contain object-left" alt={homeData.brandName} style={{ mixBlendMode: 'screen' }} />
+             <img src={homeData.logoImage || '/logo.png'} className="h-8 md:h-10 max-w-[140px] md:max-w-[180px] w-auto object-contain object-left" alt={homeData.brandName} />
           </button>
           
           <div className="hidden lg:flex gap-8 h-full items-center">
