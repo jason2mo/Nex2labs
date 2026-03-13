@@ -66,9 +66,10 @@ const Gateway: React.FC<GatewayProps> = ({ brandName, logo, customers, admins, o
               <input 
                 type="password" 
                 placeholder="••••" 
+                maxLength={4}
                 value={code}
                 onChange={handleInputChange}
-                className="w-full bg-transparent border-b-2 md:border-b-4 border-black rounded-none px-4 md:px-6 py-3 md:py-4 text-black font-black tracking-[1em] md:tracking-[1.5em] text-center text-3xl md:text-5xl uppercase outline-none focus:border-[#FF6B00] transition-all caret-transparent"
+                className="w-full min-w-[5ch] bg-transparent border-b-2 md:border-b-4 border-black rounded-none px-4 md:px-6 py-3 md:py-4 text-black font-black tracking-[0.5em] md:tracking-[0.6em] text-center text-3xl md:text-5xl uppercase outline-none focus:border-[#FF6B00] transition-all caret-transparent"
               />
             </div>
             {err && (
