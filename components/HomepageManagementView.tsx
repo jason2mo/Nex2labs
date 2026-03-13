@@ -210,9 +210,33 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                 <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ heroImage: img }), e)} />
               </label>
             </div>
-            <div><label className="text-[10px] font-black opacity-30">태그</label><input value={homeData.heroSmallTag} onChange={e => updateHomeData({ heroSmallTag: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-sm font-bold" /></div>
-            <div><label className="text-[10px] font-black opacity-30">메인 타이틀</label><textarea value={homeData.mainTitle} onChange={e => updateHomeData({ mainTitle: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-sm font-black italic h-24" /></div>
-            <div><label className="text-[10px] font-black opacity-30">설명 문구</label><textarea value={homeData.description} onChange={e => updateHomeData({ description: e.target.value })} className="w-full bg-transparent border-b border-black/20 p-2 text-xs h-24" /></div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black opacity-30">태그</label>
+              <div className="flex items-center gap-2">
+                <input value={homeData.heroSmallTag} onChange={e => updateHomeData({ heroSmallTag: e.target.value })} className="flex-1 bg-transparent border-b border-black/20 p-2 text-sm font-bold" />
+                <select value={homeData.heroSmallTagFontSize ?? '10'} onChange={e => updateHomeData({ heroSmallTagFontSize: e.target.value })} className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold">
+                  {[8, 9, 10, 11, 12, 14, 16, 18, 20].map(sz => <option key={sz} value={sz}>{sz}px</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black opacity-30">메인 타이틀</label>
+              <div className="flex items-center gap-2">
+                <textarea value={homeData.mainTitle} onChange={e => updateHomeData({ mainTitle: e.target.value })} className="flex-1 bg-transparent border-b border-black/20 p-2 text-sm font-black italic h-24" />
+                <select value={homeData.mainTitleFontSize ?? '72'} onChange={e => updateHomeData({ mainTitleFontSize: e.target.value })} className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold self-start">
+                  {[24, 32, 40, 48, 56, 64, 72, 80, 96, 120].map(sz => <option key={sz} value={sz}>{sz}px</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black opacity-30">설명 문구</label>
+              <div className="flex items-center gap-2">
+                <textarea value={homeData.description} onChange={e => updateHomeData({ description: e.target.value })} className="flex-1 bg-transparent border-b border-black/20 p-2 text-xs h-24" />
+                <select value={homeData.descriptionFontSize ?? '16'} onChange={e => updateHomeData({ descriptionFontSize: e.target.value })} className="bg-transparent border border-black/20 px-2 py-1 text-xs font-bold self-start">
+                  {[12, 14, 16, 18, 20, 22, 24].map(sz => <option key={sz} value={sz}>{sz}px</option>)}
+                </select>
+              </div>
+            </div>
           </div>
         );
       case 'logos':
@@ -518,9 +542,9 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         return (
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center text-left py-12">
             <div className="lg:col-span-7 space-y-10">
-              <span className="text-[11px] font-black tracking-[0.4em] uppercase opacity-40 border-l-2 border-black pl-4">{homeData.heroSmallTag}</span>
-              <h2 className="editorial-title text-6xl italic leading-none neo-gradient-text whitespace-pre-line">{homeData.mainTitle}</h2>
-              <p className="text-lg opacity-40 leading-relaxed max-w-xl">{homeData.description}</p>
+              <span className="font-black tracking-[0.4em] uppercase opacity-40 border-l-2 border-black pl-4" style={{ fontSize: `${homeData.heroSmallTagFontSize || 10}px` }}>{homeData.heroSmallTag}</span>
+              <h2 className="editorial-title italic leading-none neo-gradient-text whitespace-pre-line" style={{ fontSize: `${homeData.mainTitleFontSize || 72}px` }}>{homeData.mainTitle}</h2>
+              <p className="opacity-40 leading-relaxed max-w-xl" style={{ fontSize: `${homeData.descriptionFontSize || 16}px` }}>{homeData.description}</p>
             </div>
             <div className="lg:col-span-5 relative hidden lg:block">
                <div className="aspect-[3/4] rounded-3xl overflow-hidden border border-black/10 hero-image-mask relative bg-black/5">

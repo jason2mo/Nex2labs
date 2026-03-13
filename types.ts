@@ -92,8 +92,11 @@ export interface HomeData {
   logoImage: string | null;
   logoBackgroundColor: string;
   heroSmallTag: string;
+  heroSmallTagFontSize: string;
   mainTitle: string;
+  mainTitleFontSize: string;
   description: string;
+  descriptionFontSize: string;
   heroImage: string | null;
   realityIndex: string;
   trustedCount: string;

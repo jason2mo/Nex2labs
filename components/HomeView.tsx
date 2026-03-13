@@ -58,11 +58,11 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center">
               <div className="lg:col-span-7 space-y-8 md:space-y-12 z-10">
                 <div className="space-y-4">
-                  <span className="text-[9px] md:text-[10px] font-bold tracking-[0.4em] md:tracking-[0.6em] uppercase text-[#FF6B00] flex items-center gap-3 md:gap-4">
+                  <span className="font-bold tracking-[0.4em] md:tracking-[0.6em] uppercase text-[#FF6B00] flex items-center gap-3 md:gap-4" style={{ fontSize: `${data.heroSmallTagFontSize || 10}px` }}>
                     <span className="w-6 md:w-8 h-[1px] bg-[#FF6B00]"></span>
                     {data.heroSmallTag}
                   </span>
-                  <h1 className="big-title text-white italic whitespace-pre-line">
+                  <h1 className="big-title text-white italic whitespace-pre-line" style={{ fontSize: `clamp(2rem, 5vw, ${data.mainTitleFontSize || 72}px)` }}>
                     {data.mainTitle}
                   </h1>
                 </div>
@@ -74,7 +74,7 @@ const HomeView: React.FC<HomeViewProps> = ({ data, scopeCategories, onNavigateTo
                     문의하기
                   </button>
                 </div>
-                <p className="text-base md:text-lg text-white/60 leading-relaxed font-light max-w-xl">{data.description}</p>
+                <p className="text-white/60 leading-relaxed font-light max-w-xl" style={{ fontSize: `${data.descriptionFontSize || 16}px` }}>{data.description}</p>
               </div>
               <div className="lg:col-span-5 relative hidden lg:block">
                 <div className="relative aspect-[3/4] hero-image-mask rounded-3xl overflow-hidden border border-white/10">
