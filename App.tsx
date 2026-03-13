@@ -193,11 +193,7 @@ const App: React.FC = () => {
       case 'dashboard': 
         return session?.type === 'admin' ? (
           <AdminView 
-            products={products} setProducts={setProducts} 
-            orders={orders} setOrders={setOrders} 
-            customers={customers} setCustomers={setCustomers} 
             admins={admins} setAdmins={setAdmins} 
-            formatPrice={formatPrice}
             onDeleteItem={handleDeleteItem}
           />
         ) : <HomeView {...commonProps} />;
