@@ -222,10 +222,10 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] flex flex-col font-sans selection:bg-black selection:text-[#FAF9F6] text-black">
+    <div className="min-h-screen bg-[#1a0505] flex flex-col font-sans selection:bg-red-600 selection:text-white text-white">
       {!isAppReady && <LoadingOverlay brandName={homeData.brandName} />}
       
-      <nav className="bg-[#FAF9F6] border-b border-black sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
+      <nav className="bg-[#1a0505] border-b border-white/20 sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
         <div className="flex items-center gap-4 md:gap-12 h-full">
           <button 
             type="button" 
@@ -235,7 +235,7 @@ const App: React.FC = () => {
              {homeData.logoImage ? (
                <img src={homeData.logoImage} className="h-8 md:h-10 object-contain" alt={homeData.brandName} />
              ) : (
-               <div className="bg-black px-3 md:px-5 py-1.5 md:py-2 brutal-border shadow-sm group-hover:bg-neutral-800">
+               <div className="bg-white text-red-950 px-3 md:px-5 py-1.5 md:py-2 brutal-border shadow-sm group-hover:bg-neutral-200">
                   <h1 className="editorial-title text-lg md:text-xl leading-none text-[#FAF9F6] tracking-tighter transition-all uppercase">{homeData.brandName}</h1>
                </div>
              )}
@@ -250,7 +250,7 @@ const App: React.FC = () => {
         
         <div className="flex items-center gap-4 md:gap-8 h-full">
           {!session ? (
-            <button type="button" onClick={() => handleNavigate('login')} className="flex items-center gap-2 bg-black text-[#FAF9F6] px-4 md:px-6 py-2 md:py-2.5 font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-neutral-800 transition-all shadow-[4px_4px_0_0_rgba(0,0,0,0.1)]">
+            <button type="button" onClick={() => handleNavigate('login')} className="flex items-center gap-2 bg-white text-red-950 px-4 md:px-6 py-2 md:py-2.5 font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-neutral-200 transition-all shadow-[4px_4px_0_0_rgba(255,255,255,0.1)]">
               <Key size={14}/> <span className="hidden xs:inline">{homeData.loginButtonText}</span><span className="xs:hidden">LOGIN</span>
             </button>
           ) : (
@@ -278,8 +278,8 @@ const App: React.FC = () => {
               </button>
 
               {isProfileMenuOpen && (
-                <div className="absolute top-[85%] right-0 w-64 md:w-72 bg-[#FAF9F6] border-2 border-black shadow-[15px_15px_0_0_rgba(0,0,0,0.05)] mt-4 animate-fade-in z-[60] overflow-hidden">
-                  <div className="p-4 border-b border-black/10 bg-black/5">
+                <div className="absolute top-[85%] right-0 w-64 md:w-72 bg-[#1a0505] border-2 border-white/20 shadow-[15px_15px_0_0_rgba(255,255,255,0.05)] mt-4 animate-fade-in z-[60] overflow-hidden">
+                  <div className="p-4 border-b border-white/10 bg-white/5">
                     <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">인증 세션 정보</p>
                     <p className="text-xs font-bold truncate opacity-80 italic">CODE: {session.data?.code}</p>
                   </div>
@@ -289,7 +289,7 @@ const App: React.FC = () => {
                       <>
                         <button 
                           onClick={() => handleNavigate('dashboard')}
-                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-black hover:text-[#FAF9F6] group ${currentView === 'dashboard' ? 'bg-black/10' : ''}`}
+                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white hover:text-red-950 group ${currentView === 'dashboard' ? 'bg-white/10' : ''}`}
                         >
                           <Layout size={18} className="opacity-40 group-hover:opacity-100" />
                           <div className="flex flex-col">
@@ -299,7 +299,7 @@ const App: React.FC = () => {
                         </button>
                         <button 
                           onClick={() => handleNavigate('homepage_mgmt')}
-                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-black hover:text-[#FAF9F6] group ${currentView === 'homepage_mgmt' ? 'bg-black/10' : ''}`}
+                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white hover:text-red-950 group ${currentView === 'homepage_mgmt' ? 'bg-white/10' : ''}`}
                         >
                           <Settings size={18} className="opacity-40 group-hover:opacity-100" />
                           <div className="flex flex-col">
