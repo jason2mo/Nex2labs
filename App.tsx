@@ -189,7 +189,7 @@ const App: React.FC = () => {
       case 'home': return <HomeView {...commonProps} />;
       case 'scope_detail': return <ScopeDetailView categories={scopeCategories} categoryId={selectedCategory} posts={scopePosts} onBack={() => handleNavigate('home')} />;
       case 'team': return <TeamView data={homeData} onBack={() => handleNavigate('home')} />;
-      case 'login': return <Gateway brandName={homeData.brandName} logo={homeData.logoImage} customers={customers} admins={admins} onLogin={handleLogin} />;
+      case 'login': return <Gateway brandName={homeData.brandName} logo={homeData.logoImage || '/logo.png'} customers={customers} admins={admins} onLogin={handleLogin} />;
       case 'dashboard': 
         return session?.type === 'admin' ? (
           <AdminView 
@@ -232,13 +232,7 @@ const App: React.FC = () => {
             onClick={() => handleNavigate('home')} 
             className="px-2 py-2 group hover:opacity-70 transition-all"
           >
-             {homeData.logoImage ? (
-               <img src={homeData.logoImage} className="h-8 md:h-10 object-contain" alt={homeData.brandName} />
-             ) : (
-               <div className="bg-white text-red-950 px-3 md:px-5 py-1.5 md:py-2 brutal-border shadow-sm group-hover:bg-neutral-200">
-                  <h1 className="editorial-title text-lg md:text-xl leading-none text-[#FAF9F6] tracking-tighter transition-all uppercase">{homeData.brandName}</h1>
-               </div>
-             )}
+             <img src={homeData.logoImage || '/logo.png'} className="h-8 md:h-10 object-contain" alt={homeData.brandName} />
           </button>
           
           <div className="hidden lg:flex gap-8 h-full items-center">
