@@ -232,7 +232,7 @@ const App: React.FC = () => {
             onClick={() => handleNavigate('home')} 
             className="px-2 py-2"
           >
-             <img src={homeData.logoImage || '/logo.png'} className="h-[30px] md:h-[38px] max-w-[133px] md:max-w-[171px] w-auto object-contain object-left" alt={homeData.brandName} />
+             <img src={homeData.logoImage || '/logo.png'} className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left" alt={homeData.brandName} />
           </button>
           
           <div className="hidden lg:flex gap-8 h-full items-center">
@@ -244,7 +244,7 @@ const App: React.FC = () => {
         
         <div className="flex items-center gap-4 md:gap-8 h-full">
           {!session ? (
-            <button type="button" onClick={() => handleNavigate('login')} className="btn-block flex items-center gap-2 px-6 md:px-10 py-4 md:py-5">
+            <button type="button" onClick={() => handleNavigate('login')} className="btn-block flex items-center gap-2 px-5 md:px-8 py-3 md:py-4">
               <Key size={14}/> <span className="hidden xs:inline">{homeData.loginButtonText}</span><span className="xs:hidden">LOGIN</span>
             </button>
           ) : (
