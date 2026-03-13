@@ -59,11 +59,11 @@ const AdminView: React.FC<AdminViewProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in text-black">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in text-white">
       <div className="lg:col-span-3 space-y-6 md:space-y-8">
         {adminTab === 'products' && (
-          <div className="bg-[#FAF9F6] p-6 md:p-8 brutal-border">
-            <h2 className="text-[11px] md:text-[12px] font-black mb-6 md:mb-8 flex items-center gap-3 uppercase tracking-widest">
+          <div className="bg-[#FAF9F6] p-6 md:p-8 border border-white/20 text-black">
+            <h2 className="text-[11px] md:text-[12px] font-black mb-6 md:mb-8 flex items-center gap-3 uppercase tracking-widest text-black">
               <PlusCircle size={14}/> 상품 등록
             </h2>
             <form className="space-y-4" onSubmit={handleAddProduct}>
@@ -72,11 +72,11 @@ const AdminView: React.FC<AdminViewProps> = ({
               <input type="text" required value={pf.priceInclTax} onChange={e => setPf({...pf, priceInclTax: e.target.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",")})} className="w-full px-4 py-3 md:py-4 bg-transparent border-b-2 border-black/20 text-[11px] md:text-[12px] font-black outline-none focus:border-black transition-all" placeholder="단가 (¥)" />
               <div className="grid grid-cols-2 gap-4 pt-2 md:pt-4">
                 <div className="space-y-1">
-                  <label className="text-[8px] opacity-30 uppercase font-black">출고일</label>
+                  <label className="text-[8px] text-black/50 uppercase font-black">출고일</label>
                   <input type="date" required value={pf.outboundDate} onChange={e => setPf({...pf, outboundDate: e.target.value})} className="w-full px-2 md:px-4 py-2 md:py-3 bg-[#FAF9F6] border border-black/20 text-[10px]" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[8px] opacity-30 uppercase font-black">마감일</label>
+                  <label className="text-[8px] text-black/50 uppercase font-black">마감일</label>
                   <input type="date" required value={pf.deadline} onChange={e => setPf({...pf, deadline: e.target.value})} className="w-full px-2 md:px-4 py-2 md:py-3 bg-[#FAF9F6] border border-black/20 text-[10px]" />
                 </div>
               </div>
@@ -86,8 +86,8 @@ const AdminView: React.FC<AdminViewProps> = ({
         )}
 
         {adminTab === 'customers' && (
-          <div className="bg-[#FAF9F6] p-6 md:p-8 brutal-border">
-            <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-widest mb-6 md:mb-8 flex items-center gap-3"><UserPlus size={14}/> 고객 등록</h3>
+          <div className="bg-[#FAF9F6] p-6 md:p-8 border border-white/20 text-black">
+            <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-widest mb-6 md:mb-8 flex items-center gap-3 text-black"><UserPlus size={14}/> 고객 등록</h3>
             <form onSubmit={handleRegisterCustomer} className="space-y-4">
               <input type="text" required value={cf.name} onChange={e => setCf({...cf, name: e.target.value})} className="w-full px-4 py-3 md:py-4 bg-transparent border-b-2 border-black/20 text-[11px] md:text-[12px] font-bold outline-none focus:border-black transition-all" placeholder="고객 성함" />
               <input type="text" required value={cf.code} onChange={e => setCf({...cf, code: e.target.value.toUpperCase()})} className="w-full px-4 py-3 md:py-4 bg-transparent border-b-2 border-black/20 text-[11px] md:text-[12px] font-black outline-none uppercase focus:border-black transition-all" placeholder="인증 코드" />
@@ -97,8 +97,8 @@ const AdminView: React.FC<AdminViewProps> = ({
         )}
 
         {adminTab === 'admins' && (
-          <div className="bg-[#FAF9F6] p-6 md:p-8 brutal-border">
-            <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-widest mb-6 md:mb-8 flex items-center gap-3"><ShieldCheck size={14}/> 관리자 관리</h3>
+          <div className="bg-[#FAF9F6] p-6 md:p-8 border border-white/20 text-black">
+            <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-widest mb-6 md:mb-8 flex items-center gap-3 text-black"><ShieldCheck size={14}/> 관리자 관리</h3>
             <form onSubmit={handleRegisterAdmin} className="space-y-4">
               <input type="text" required value={af.name} onChange={e => setAf({...af, name: e.target.value})} className="w-full px-4 py-3 md:py-4 bg-transparent border-b-2 border-black/20 text-[11px] md:text-[12px] font-bold outline-none focus:border-black transition-all" placeholder="관리자명" />
               <input type="text" required value={af.code} onChange={e => setAf({...af, code: e.target.value.toUpperCase()})} className="w-full px-4 py-3 md:py-4 bg-transparent border-b-2 border-black/20 text-[11px] md:text-[12px] font-black outline-none uppercase focus:border-black transition-all" placeholder="관리자 코드" />
@@ -109,7 +109,7 @@ const AdminView: React.FC<AdminViewProps> = ({
       </div>
 
       <div className="lg:col-span-9 space-y-10">
-        <div className="flex flex-nowrap overflow-x-auto gap-4 md:gap-8 border-b border-black/10 no-scrollbar">
+        <div className="flex flex-nowrap overflow-x-auto gap-4 md:gap-8 border-b border-white/20 no-scrollbar">
           {[
             { id: 'orders', label: '주문', icon: ClipboardList },
             { id: 'products', label: '인벤토리', icon: Package },
@@ -120,19 +120,19 @@ const AdminView: React.FC<AdminViewProps> = ({
               key={tab.id} 
               type="button" 
               onClick={() => setAdminTab(tab.id as any)} 
-              className={`pb-4 md:pb-5 text-[10px] md:text-[12px] font-black flex items-center gap-2 md:gap-3 uppercase tracking-widest transition-all border-b-2 md:border-b-4 shrink-0 ${adminTab === tab.id ? 'border-black opacity-100' : 'border-transparent opacity-30 hover:opacity-100'}`}
+              className={`pb-4 md:pb-5 text-[10px] md:text-[12px] font-black flex items-center gap-2 md:gap-3 uppercase tracking-widest transition-all border-b-2 md:border-b-4 shrink-0 ${adminTab === tab.id ? 'border-[#FF6B00] text-white' : 'border-transparent text-white/50 hover:text-white'}`}
             >
               <tab.icon size={14} md:size={16}/> {tab.label}
             </button>
           ))}
         </div>
 
-        <div className="bg-[#FAF9F6] border-2 border-black min-h-[500px] brutal-shadow overflow-hidden">
+        <div className="bg-[#FAF9F6] border-2 border-white/20 min-h-[500px] overflow-hidden">
           {adminTab === 'orders' && (
             <div className="overflow-x-auto">
               {/* Desktop Table View */}
               <table className="w-full text-left text-[11px] hidden md:table">
-                <thead className="bg-black text-[#FAF9F6] font-black uppercase tracking-widest">
+                <thead className="bg-black text-white font-black uppercase tracking-widest text-[11px] md:text-[12px]">
                   <tr>
                     <th className="px-8 py-5">날짜</th>
                     <th className="px-8 py-5">고객</th>
@@ -142,14 +142,14 @@ const AdminView: React.FC<AdminViewProps> = ({
                     <th className="px-8 py-5 text-center">작업</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black/5 font-bold">
+                <tbody className="divide-y divide-black/10 font-bold text-black">
                   {orders.map(o => (
                     <tr key={o.id} className="hover:bg-black/5 transition-colors group">
-                      <td className="px-8 py-8 text-[10px] font-mono opacity-40">{new Date(o.createdAt).toLocaleString()}</td>
-                      <td className="px-8 py-8">{o.customerName}<span className="ml-2 opacity-20">#{o.customerCode}</span></td>
-                      <td className="px-8 py-8 uppercase tracking-tighter text-sm">{o.productName}</td>
-                      <td className="px-8 py-8 text-center text-xl font-black italic">{o.quantity}</td>
-                      <td className="px-8 py-8 text-right font-black italic text-xl">¥{formatPrice(o.totalPriceInclTax)}</td>
+                      <td className="px-8 py-8 text-[10px] font-mono text-black/70">{new Date(o.createdAt).toLocaleString()}</td>
+                      <td className="px-8 py-8 text-black">{o.customerName}<span className="ml-2 text-black/50">#{o.customerCode}</span></td>
+                      <td className="px-8 py-8 uppercase tracking-tighter text-sm text-black">{o.productName}</td>
+                      <td className="px-8 py-8 text-center text-xl font-black italic text-black">{o.quantity}</td>
+                      <td className="px-8 py-8 text-right font-black italic text-xl text-black">¥{formatPrice(o.totalPriceInclTax)}</td>
                       <td className="px-8 py-8 text-center">
                         <button 
                           type="button" 
@@ -165,13 +165,13 @@ const AdminView: React.FC<AdminViewProps> = ({
               </table>
 
               {/* Mobile Card View */}
-              <div className="md:hidden divide-y divide-black/10">
+              <div className="md:hidden divide-y divide-black/10 text-black">
                 {orders.map(o => (
                   <div key={o.id} className="p-6 space-y-4">
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
-                        <p className="text-[9px] font-mono opacity-40">{new Date(o.createdAt).toLocaleString()}</p>
-                        <p className="font-black text-sm uppercase">{o.productName}</p>
+                        <p className="text-[9px] font-mono text-black/60">{new Date(o.createdAt).toLocaleString()}</p>
+                        <p className="font-black text-sm uppercase text-black">{o.productName}</p>
                       </div>
                       <button 
                         type="button" 
@@ -183,12 +183,12 @@ const AdminView: React.FC<AdminViewProps> = ({
                     </div>
                     <div className="flex justify-between items-end">
                       <div>
-                        <p className="text-[10px] opacity-40 uppercase">고객</p>
-                        <p className="text-xs font-bold">{o.customerName} <span className="opacity-20">#{o.customerCode}</span></p>
+                        <p className="text-[10px] text-black/50 uppercase">고객</p>
+                        <p className="text-xs font-bold text-black">{o.customerName} <span className="text-black/40">#{o.customerCode}</span></p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] opacity-40 uppercase">수량: {o.quantity}</p>
-                        <p className="text-lg font-black italic">¥{formatPrice(o.totalPriceInclTax)}</p>
+                        <p className="text-[10px] text-black/50 uppercase">수량: {o.quantity}</p>
+                        <p className="text-lg font-black italic text-black">¥{formatPrice(o.totalPriceInclTax)}</p>
                       </div>
                     </div>
                   </div>
@@ -196,20 +196,20 @@ const AdminView: React.FC<AdminViewProps> = ({
               </div>
               
               {(orders.length === 0) && (
-                <div className="py-40 text-center text-black/60 font-black italic uppercase tracking-[0.5em] md:tracking-[1em]">NO_RECORDS</div>
+                <div className="py-40 text-center text-black/60 font-black italic uppercase tracking-[0.5em] md:tracking-[1em] text-sm md:text-base">NO_RECORDS</div>
               )}
             </div>
           )}
 
           {adminTab === 'products' && (
-            <div className="p-4 md:p-8 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
+            <div className="p-4 md:p-8 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 text-black">
               {products.map(p => (
                 <div key={p.id} className="p-6 md:p-8 border border-black/10 flex justify-between items-start hover:border-black transition-all group bg-black/[0.02]">
                   <div className="flex-1 pr-4 md:pr-6 pointer-events-none">
                     <span className="inline-block bg-black text-[#FAF9F6] text-[8px] md:text-[9px] font-black px-2 py-0.5 mb-3 md:mb-4 italic uppercase tracking-widest">{p.platform}</span>
                     <h4 className="editorial-title text-xl md:text-2xl mb-2 leading-tight">{p.name}</h4>
                     <div className="text-2xl md:text-3xl font-black mb-4 md:mb-6 italic tracking-tighter text-black/90">¥{formatPrice(p.priceInclTax)}</div>
-                    <div className="flex flex-wrap gap-3 md:gap-4 text-[8px] md:text-[9px] font-black uppercase tracking-widest opacity-20 group-hover:opacity-40 transition-opacity">
+                    <div className="flex flex-wrap gap-3 md:gap-4 text-[8px] md:text-[9px] font-black uppercase tracking-widest text-black/40 group-hover:text-black/60 transition-colors">
                        <span>ID: {p.id.split('_').pop()?.toUpperCase()}</span>
                        <span>MOD: {new Date(p.createdAt).toLocaleDateString()}</span>
                     </div>
@@ -223,19 +223,19 @@ const AdminView: React.FC<AdminViewProps> = ({
                   </button>
                 </div>
               ))}
-              {products.length === 0 && <div className="col-span-full py-40 text-center text-black/60 font-black italic uppercase tracking-widest">INVENTORY_EMPTY</div>}
+              {products.length === 0 && <div className="col-span-full py-40 text-center text-black/60 font-black italic uppercase tracking-widest text-sm md:text-base">INVENTORY_EMPTY</div>}
             </div>
           )}
 
           {adminTab === 'customers' && (
-            <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-black">
               {customers.map(c => (
                 <div key={c.id} className="p-6 border-2 border-black/10 flex justify-between items-center group hover:border-black transition-all bg-black/[0.02]">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-black text-[#FAF9F6] flex items-center justify-center font-black italic text-lg">{c.name.slice(0,1)}</div>
                     <div>
                       <p className="font-black text-[13px] uppercase tracking-tight">{c.name}</p>
-                      <p className="text-[10px] font-black opacity-30 mt-1 tracking-widest">코드: {c.code}</p>
+                      <p className="text-[10px] font-black text-black/50 mt-1 tracking-widest">코드: {c.code}</p>
                     </div>
                   </div>
                   <button 
@@ -251,14 +251,14 @@ const AdminView: React.FC<AdminViewProps> = ({
           )}
 
           {adminTab === 'admins' && (
-            <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-black">
               {admins.map(a => (
-                <div key={a.id} className="p-6 border-2 border-black flex justify-between items-center group bg-black/5">
+                <div key={a.id} className="p-6 border-2 border-black/10 flex justify-between items-center group bg-black/[0.02] hover:border-black/30 transition-all">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-[#FAF9F6] brutal-border border-black/30 flex items-center justify-center font-black italic text-lg text-black">A</div>
+                    <div className="w-10 h-10 bg-[#FAF9F6] border border-black/20 flex items-center justify-center font-black italic text-lg text-black">A</div>
                     <div>
-                      <p className="font-black text-[13px] uppercase tracking-tight">{a.name}</p>
-                      <p className="text-[10px] font-black opacity-60 mt-1 tracking-widest">인증키: {a.code}</p>
+                      <p className="font-black text-[13px] uppercase tracking-tight text-black">{a.name}</p>
+                      <p className="text-[10px] font-black text-black/60 mt-1 tracking-widest">인증키: {a.code}</p>
                     </div>
                   </div>
                   {a.id !== 'master' && (
