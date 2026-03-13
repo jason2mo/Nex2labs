@@ -30,6 +30,7 @@ export const DEFAULT_SCOPE_CATEGORIES = [
 
 export const DEFAULT_HOME_DATA = {
   brandName: "NEXTO",
+  pageTitle: "NEXTO | 시스템",
   logoImage: '/logo.png',
   logoBackgroundColor: 'transparent',
   heroSmallTag: "Pioneering the Future of Cultural Exchange, NexTo.",

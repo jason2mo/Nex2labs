@@ -35,7 +35,7 @@ const App: React.FC = () => {
   const unreadInquiriesCount = inquiries.filter(i => !i.isRead).length;
 
   useEffect(() => {
-    document.title = `${homeData.brandName} | 시스템`;
+    document.title = homeData.pageTitle || `${homeData.brandName} | 시스템`;
   }, [homeData.brandName]);
 
   useEffect(() => {

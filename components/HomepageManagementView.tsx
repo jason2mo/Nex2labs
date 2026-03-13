@@ -148,6 +148,16 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                 placeholder="NEXTO"
               />
             </div>
+            <div>
+              <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block mb-2">페이지 제목 (브라우저 탭에 표시)</label>
+              <input 
+                value={homeData.pageTitle ?? ''} 
+                onChange={e => updateHomeData({ pageTitle: e.target.value })} 
+                className="w-full bg-transparent border-b-2 border-white/20 p-3 text-base font-bold outline-none text-white focus:border-[#FF6B00] transition-all placeholder:text-white/40" 
+                placeholder="NEXTO | 시스템"
+              />
+              <p className="text-[9px] text-white/50 mt-1">탭/북마크에 보이는 이름입니다.</p>
+            </div>
             <div className="pt-6">
               <div className="flex justify-between items-center mb-4">
                 <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block">메인 로고 이미지</label>
