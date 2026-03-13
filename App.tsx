@@ -219,7 +219,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black flex flex-col font-sans selection:bg-[#FF6B00] selection:text-white text-white">
-      {!isAppReady && <LoadingOverlay brandName={homeData.brandName} />}
+      {!isAppReady && <LoadingOverlay brandName={homeData.brandName} logoImage={homeData.logoImage} loadingSubtext={homeData.loadingSubtext} />}
       
       <nav className="bg-black border-b border-white/20 sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
         <div className="flex items-center gap-4 md:gap-12 h-full">

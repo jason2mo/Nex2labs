@@ -79,6 +79,7 @@ export const DEFAULT_HOME_DATA = {
     { label: "Our Team", target: "team" },
   ],
   mgmtPreviewLabel: "PREVIEW",
+  loadingSubtext: "BOOTING INFRASTRUCTURE",
   loginButtonText: "로그인",
   loginButtonFontSize: "12",
   systemStatusText: "시스템 정상 작동 중",

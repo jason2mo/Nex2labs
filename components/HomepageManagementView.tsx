@@ -204,6 +204,20 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                 <p className="text-[9px] text-white/50 mt-2">선택: {homeData.logoBackgroundColor === 'transparent' ? '투명' : homeData.logoBackgroundColor}</p>
               </div>
             </div>
+            <div className="pt-8 border-t border-white/10">
+              <h4 className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-4">로딩 화면 (진입 시)</h4>
+              <p className="text-[9px] text-white/50 mb-3">상단에는 위 메인 로고가 표시됩니다. 로고가 없으면 브랜드 이름이 표시됩니다.</p>
+              <div>
+                <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block mb-2">로딩 화면 하단 문구</label>
+                <input 
+                  value={homeData.loadingSubtext ?? ''} 
+                  onChange={e => updateHomeData({ loadingSubtext: e.target.value })} 
+                  className="w-full bg-transparent border-b-2 border-white/20 p-3 text-sm font-bold outline-none text-white focus:border-[#FF6B00] transition-all placeholder:text-white/40" 
+                  placeholder="BOOTING INFRASTRUCTURE"
+                />
+                <p className="text-[9px] text-white/50 mt-1">로고/브랜드명 아래 오렌지색으로 표시됩니다.</p>
+              </div>
+            </div>
           </div>
         );
       case 'hero':

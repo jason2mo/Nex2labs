@@ -1,15 +1,24 @@
-
 import React from 'react';
 
 interface LoadingOverlayProps {
   brandName?: string;
+  logoImage?: string | null;
+  loadingSubtext?: string;
 }
 
-const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ brandName = "NexTo Labs" }) => {
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
+  brandName = "NexTo Labs",
+  logoImage = null,
+  loadingSubtext = "BOOTING INFRASTRUCTURE"
+}) => {
   return (
     <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-white">
-      <div className="mb-8">
-        <h1 className="big-title text-4xl md:text-5xl italic">{brandName}.</h1>
+      <div className="mb-8 flex justify-center">
+        {logoImage ? (
+          <img src={logoImage} alt={brandName} className="max-h-16 md:max-h-20 w-auto object-contain" />
+        ) : (
+          <h1 className="big-title text-4xl md:text-5xl italic">{brandName}.</h1>
+        )}
       </div>
       <div className="w-12 h-[1px] bg-white/20 relative overflow-hidden">
         <div className="absolute inset-0 bg-[#FF6B00] animate-[loading_1.5s_infinite_ease-in-out]"></div>
@@ -21,7 +30,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ brandName = "NexTo Labs
         }
       `}</style>
       <div className="mt-6 text-[10px] font-black uppercase tracking-[0.4em] text-[#FF6B00]">
-        Booting Infrastructure
+        {loadingSubtext || "BOOTING INFRASTRUCTURE"}
       </div>
     </div>
   );
