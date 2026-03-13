@@ -222,10 +222,10 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a0505] flex flex-col font-sans selection:bg-red-600 selection:text-white text-white">
+    <div className="min-h-screen bg-[#FAF9F6] flex flex-col font-sans selection:bg-black selection:text-white text-black">
       {!isAppReady && <LoadingOverlay brandName={homeData.brandName} />}
       
-      <nav className="bg-[#1a0505] border-b border-white/20 sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
+      <nav className="bg-[#FAF9F6] border-b border-black/20 sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
         <div className="flex items-center gap-4 md:gap-12 h-full">
           <button 
             type="button" 
@@ -278,8 +278,8 @@ const App: React.FC = () => {
               </button>
 
               {isProfileMenuOpen && (
-                <div className="absolute top-[85%] right-0 w-64 md:w-72 bg-[#1a0505] border-2 border-white/20 shadow-[15px_15px_0_0_rgba(255,255,255,0.05)] mt-4 animate-fade-in z-[60] overflow-hidden">
-                  <div className="p-4 border-b border-white/10 bg-white/5">
+                <div className="absolute top-[85%] right-0 w-64 md:w-72 bg-[#FAF9F6] border-2 border-black/20 shadow-[15px_15px_0_0_rgba(0,0,0,0.05)] mt-4 animate-fade-in z-[60] overflow-hidden">
+                  <div className="p-4 border-b border-black/10">
                     <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">인증 세션 정보</p>
                     <p className="text-xs font-bold truncate opacity-80 italic">CODE: {session.data?.code}</p>
                   </div>
@@ -289,7 +289,7 @@ const App: React.FC = () => {
                       <>
                         <button 
                           onClick={() => handleNavigate('dashboard')}
-                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white hover:text-red-950 group ${currentView === 'dashboard' ? 'bg-white/10' : ''}`}
+                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-black hover:text-[#FAF9F6] group ${currentView === 'dashboard' ? 'bg-black/10' : ''}`}
                         >
                           <Layout size={18} className="opacity-40 group-hover:opacity-100" />
                           <div className="flex flex-col">
@@ -299,7 +299,7 @@ const App: React.FC = () => {
                         </button>
                         <button 
                           onClick={() => handleNavigate('homepage_mgmt')}
-                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white hover:text-red-950 group ${currentView === 'homepage_mgmt' ? 'bg-white/10' : ''}`}
+                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-black hover:text-[#FAF9F6] group ${currentView === 'homepage_mgmt' ? 'bg-black/10' : ''}`}
                         >
                           <Settings size={18} className="opacity-40 group-hover:opacity-100" />
                           <div className="flex flex-col">
