@@ -90,6 +90,7 @@ export interface MemberItem {
 export interface HomeData {
   brandName: string;
   logoImage: string | null;
+  logoBackgroundColor: string;
   heroSmallTag: string;
   mainTitle: string;
   description: string;

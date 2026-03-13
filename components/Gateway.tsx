@@ -6,12 +6,13 @@ import { Customer, Admin, Session } from '../types';
 interface GatewayProps {
   brandName: string;
   logo?: string | null;
+  logoBackgroundColor?: string;
   customers: Customer[];
   admins: Admin[];
   onLogin: (session: Session) => void;
 }
 
-const Gateway: React.FC<GatewayProps> = ({ brandName, logo, customers, admins, onLogin }) => {
+const Gateway: React.FC<GatewayProps> = ({ brandName, logo, logoBackgroundColor = 'transparent', customers, admins, onLogin }) => {
   const [code, setCode] = useState('');
   const [err, setErr] = useState('');
 
@@ -45,7 +46,13 @@ const Gateway: React.FC<GatewayProps> = ({ brandName, logo, customers, admins, o
         <div className="text-center flex flex-col items-center">
           <div className="px-10 py-5 transition-all">
             {logo ? (
-              <img src={logo} className="max-h-[87px] mx-auto object-contain" alt={brandName} />
+              logoBackgroundColor && logoBackgroundColor !== 'transparent' ? (
+                <div className="px-4 py-2 inline-block" style={{ backgroundColor: logoBackgroundColor }}>
+                  <img src={logo} className="max-h-[87px] mx-auto object-contain" alt={brandName} />
+                </div>
+              ) : (
+                <img src={logo} className="max-h-[87px] mx-auto object-contain" alt={brandName} />
+              )
             ) : (
               <div className="bg-black px-10 py-5 brutal-border shadow-[10px_10px_0_0_black]">
                 <h1 className="editorial-title text-5xl leading-none text-[#FAF9F6] tracking-tighter uppercase">{brandName}</h1>

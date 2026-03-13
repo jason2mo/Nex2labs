@@ -189,7 +189,7 @@ const App: React.FC = () => {
       case 'home': return <HomeView {...commonProps} />;
       case 'scope_detail': return <ScopeDetailView categories={scopeCategories} categoryId={selectedCategory} posts={scopePosts} onBack={() => handleNavigate('home')} />;
       case 'team': return <TeamView data={homeData} onBack={() => handleNavigate('home')} />;
-      case 'login': return <Gateway brandName={homeData.brandName} logo={homeData.logoImage || '/logo.png'} customers={customers} admins={admins} onLogin={handleLogin} />;
+      case 'login': return <Gateway brandName={homeData.brandName} logo={homeData.logoImage || '/logo.png'} logoBackgroundColor={homeData.logoBackgroundColor ?? 'transparent'} customers={customers} admins={admins} onLogin={handleLogin} />;
       case 'dashboard': 
         return session?.type === 'admin' ? (
           <AdminView 
@@ -228,7 +228,13 @@ const App: React.FC = () => {
             onClick={() => handleNavigate('home')} 
             className="px-2 py-2"
           >
-             <img src={homeData.logoImage || '/logo.png'} className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left" alt={homeData.brandName} />
+             {(homeData.logoBackgroundColor ?? 'transparent') !== 'transparent' ? (
+              <div className="px-2 py-1 inline-block" style={{ backgroundColor: homeData.logoBackgroundColor }}>
+                <img src={homeData.logoImage || '/logo.png'} className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left" alt={homeData.brandName} />
+              </div>
+            ) : (
+              <img src={homeData.logoImage || '/logo.png'} className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left" alt={homeData.brandName} />
+            )}
           </button>
           
           <div className="hidden lg:flex gap-8 h-full items-center">

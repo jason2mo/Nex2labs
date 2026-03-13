@@ -158,6 +158,33 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                 )}
                 <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ logoImage: img }), e)} />
               </label>
+              <div className="mt-6">
+                <label className="text-[10px] font-black opacity-30 uppercase tracking-widest block mb-3">로고 배경색</label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: 'transparent', label: '투명', style: { background: 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%)', backgroundSize: '8px 8px', backgroundPosition: '0 0, 4px 4px', backgroundColor: '#eee' } },
+                    { value: '#FAF9F6', label: '페이지배경' },
+                    { value: '#000000', label: '검정' },
+                    { value: '#FFFFFF', label: '흰색' },
+                    { value: '#FF6B00', label: '오렌지' },
+                    { value: '#1a1a1a', label: '다크그레이' },
+                  ].map(({ value, label, style }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => updateHomeData({ logoBackgroundColor: value })}
+                      className={`w-10 h-10 rounded-lg border-2 flex-shrink-0 transition-all ${(homeData.logoBackgroundColor ?? 'transparent') === value ? 'border-black ring-2 ring-black/30 scale-110' : 'border-black/20 hover:border-black/40'}`}
+                      style={style || { backgroundColor: value }}
+                      title={label}
+                    >
+                      {value === 'transparent' && (
+                        <span className="text-[8px] font-black text-black/70 w-full h-full flex items-center justify-center">T</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[9px] text-black/40 mt-2">선택: {homeData.logoBackgroundColor === 'transparent' ? '투명' : homeData.logoBackgroundColor}</p>
+              </div>
             </div>
           </div>
         );
