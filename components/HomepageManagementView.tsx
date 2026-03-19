@@ -125,13 +125,15 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       try {
         const result = await saveToRepo(buildSyncData(), token);
         if (result.success) {
-          setSyncStatus({ type: 'idle', message: '로컬 + GitHub 저장 완료!', result: 'success' });
+          setSyncStatus({ type: 'idle', message: '로컬 + GitHub 저장 완료! 다른 기기에서도 곧 반영됩니다.', result: 'success' });
         } else {
           setSyncStatus({ type: 'idle', message: result.error || 'GitHub 저장 실패', result: 'error' });
         }
       } catch (err) {
         setSyncStatus({ type: 'idle', message: `GitHub 동기화 오류: ${(err as Error).message}`, result: 'error' });
       }
+    } else {
+      setSyncStatus({ type: 'idle', message: '로컬만 저장됨. 사이트/다른 기기는 예전 내용이 보입니다. GitHub Token을 설정한 뒤 다시 저장하세요.', result: 'error' });
     }
 
     setIsSaving(false);
