@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Shield, Zap, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, ArrowRight, Clock, UserPlus, X, Check, Save, MessageSquare, Loader2, Upload } from 'lucide-react';
+import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Shield, Zap, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, ArrowRight, Clock, UserPlus, X, Check, Save, MessageSquare, Loader2, Upload, Github, Download, RefreshCw, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
 import { HomeData, ScopePost, ScopeCategory, TestimonialItem, FooterLink, MemberItem } from '../types';
 import { STORAGE_KEYS } from '../constants';
 import TeamView from './TeamView';
+import GithubSettingsModal from './GithubSettingsModal';
+import { pushToGithub, pullFromGithub, downloadAsJson, getStoredToken, getLastSyncTime, SyncData } from '../services/githubSync';
 
 interface HomepageManagementViewProps {
   homeData: HomeData;
@@ -42,6 +44,54 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     { id: 'footer_info', label: '푸터', icon: Footprints, isSection: true },
     { id: 'mgmt', label: 'UI 문구', icon: Settings, isSection: false }
   ];
+
+  const [showGithubSettings, setShowGithubSettings] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<{ type: 'idle' | 'pushing' | 'pulling'; message: string; result?: 'success' | 'error' }>({ type: 'idle', message: '' });
+
+  const lastSync = getLastSyncTime();
+
+  const buildSyncData = (): SyncData => ({
+    homeData,
+    scopePosts,
+    scopeCategories,
+    timestamp: new Date().toISOString(),
+    version: 1,
+  });
+
+  const handlePushToGithub = async () => {
+    setSyncStatus({ type: 'pushing', message: 'GitHub에 업로드 중...' });
+    try {
+      const result = await pushToGithub(buildSyncData());
+      setSyncStatus({
+        type: 'idle',
+        message: `동기화 완료! Gist URL: ${result.url}`,
+        result: 'success',
+      });
+      setTimeout(() => setSyncStatus(prev => prev.type === 'idle' && prev.result === 'success' ? { type: 'idle', message: '' } : prev), 5000);
+    } catch (err) {
+      setSyncStatus({ type: 'idle', message: (err as Error).message, result: 'error' });
+    }
+  };
+
+  const handlePullFromGithub = async () => {
+    setSyncStatus({ type: 'pulling', message: 'GitHub에서 다운로드 중...' });
+    try {
+      const data = await pullFromGithub();
+      if (data.homeData) setHomeData(data.homeData as HomeData);
+      if (data.scopePosts) setScopePosts(data.scopePosts as ScopePost[]);
+      if (data.scopeCategories) setScopeCategories(data.scopeCategories as ScopeCategory[]);
+      setSyncStatus({ type: 'idle', message: 'GitHub에서 데이터를 복원했습니다!', result: 'success' });
+      setTimeout(() => setSyncStatus(prev => prev.type === 'idle' && prev.result === 'success' ? { type: 'idle', message: '' } : prev), 5000);
+    } catch (err) {
+      setSyncStatus({ type: 'idle', message: (err as Error).message, result: 'error' });
+    }
+  };
+
+  const handleDownloadJson = () => {
+    downloadAsJson(buildSyncData());
+  };
+
+  const hasToken = !!getStoredToken();
 
   const [displayTabs, setDisplayTabs] = useState(() => {
     const order = homeData.sectionOrder || [];
@@ -744,6 +794,79 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-fade-in text-white">
+      {/* GitHub Settings Modal */}
+      {showGithubSettings && <GithubSettingsModal onClose={() => setShowGithubSettings(false)} />}
+
+      {/* 상단: GitHub 동기화 버튼 */}
+      <div className="lg:col-span-12">
+        <div className="bg-black border border-white/20 p-6">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Title */}
+            <div className="flex items-center gap-2 mr-4">
+              <Github size={14} className="text-[#FF6B00]" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/60">GITHUB SYNC</span>
+              {lastSync && (
+                <span className="text-[9px] text-white/30">마지막: {new Date(lastSync).toLocaleString()}</span>
+              )}
+            </div>
+
+            {/* Sync status */}
+            {syncStatus.message && (
+              <div className={`flex items-center gap-2 px-3 py-2 border text-[10px] font-black ${
+                syncStatus.result === 'success' ? 'border-green-500/40 bg-green-500/10 text-green-400' :
+                syncStatus.result === 'error' ? 'border-red-500/40 bg-red-500/10 text-red-400' :
+                'border-white/20 text-white/60'
+              }`}>
+                {syncStatus.result === 'success' ? <CheckCircle2 size={12} /> :
+                 syncStatus.result === 'error' ? <AlertCircle size={12} /> :
+                 <Loader2 size={12} className="animate-spin" />}
+                {syncStatus.message}
+                {syncStatus.result === 'success' && syncStatus.message.includes('http') && (
+                  <a href={syncStatus.message.match(/https:\/\/gist\.github\.com[^\s]+/)?.[0]} target="_blank" rel="noopener noreferrer" className="underline ml-1">
+                    <ExternalLink size={10} className="inline" />
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Buttons */}
+            <button
+              onClick={() => setShowGithubSettings(true)}
+              className="flex items-center gap-2 bg-white/5 border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:border-white/40 transition-all"
+            >
+              <Settings size={12} />
+              {hasToken ? '설정' : 'TOKEN 설정'}
+            </button>
+
+            <button
+              onClick={handlePushToGithub}
+              disabled={!hasToken || syncStatus.type !== 'idle'}
+              className="flex items-center gap-2 bg-[#FF6B00]/10 border border-[#FF6B00]/30 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#FF6B00] hover:bg-[#FF6B00]/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              {syncStatus.type === 'pushing' ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+              GitHub에 저장
+            </button>
+
+            <button
+              onClick={handlePullFromGithub}
+              disabled={!hasToken || syncStatus.type !== 'idle'}
+              className="flex items-center gap-2 bg-white/5 border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:border-white/40 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              {syncStatus.type === 'pulling' ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+              GitHub에서 가져오기
+            </button>
+
+            <button
+              onClick={handleDownloadJson}
+              className="flex items-center gap-2 bg-white/5 border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:border-white/40 transition-all"
+            >
+              <Download size={12} />
+              JSON 다운로드
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* 1. 좌측 메인 관리 메뉴 */}
       <div className="lg:col-span-4 space-y-8">
         <div className="bg-black border border-white/20 p-8">
