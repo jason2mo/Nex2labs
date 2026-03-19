@@ -1,6 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
-import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Shield, Zap, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, ArrowRight, Clock, UserPlus, X, Check, Save, MessageSquare, Loader2, Upload, Github, Download, RefreshCw, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, Clock, X, Check, Save, MessageSquare, Loader2, Upload, Github, Download, RefreshCw, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
 import { HomeData, ScopePost, ScopeCategory, TestimonialItem, FooterLink, MemberItem } from '../types';
 import { STORAGE_KEYS } from '../constants';
 import TeamView from './TeamView';

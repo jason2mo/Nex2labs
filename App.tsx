@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { LogOut, Key, ChevronDown, Shield, Layout, Settings, User, ShoppingBag, Mail, RefreshCw } from 'lucide-react';
+import { LogOut, Key, ChevronDown, Layout, Settings, User, ShoppingBag, Mail, RefreshCw } from 'lucide-react';
 import { Product, Order, Customer, Admin, Session, ScopePost, HomeData, ScopeCategory, Inquiry } from './types';
 import { STORAGE_KEYS, DEFAULT_HOME_DATA, DEFAULT_SCOPE_CATEGORIES } from './constants';
 import Gateway from './components/Gateway';

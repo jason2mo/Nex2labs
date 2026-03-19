@@ -81,17 +81,6 @@ async function uploadImagesAndReplaceUrls(data: RepoSyncData, token: string): Pr
     return ok ? `${IMG_BASE}/${fileName}` : null;
   };
 
-  const uploadIdx = async (key: string, prefix: string, idx: number): Promise<string | null> => {
-    const raw = (home[key] as Array<string> | undefined)?.[idx];
-    if (!isDataUrl(raw)) return null;
-    const base64 = raw.split(',')[1];
-    if (!base64) return null;
-    const fileName = `${prefix}-${idx}.${getExtFromDataUrl(raw)}`;
-    const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
-    const ok = await uploadFileToRepo(path, base64, token);
-    return ok ? `${IMG_BASE}/${fileName}` : null;
-  };
-
   // 主 logo
   if (home.logoImage && isDataUrl(home.logoImage as string)) {
     const logoUrl = await upload('logoImage', makeImgName('logo', home.logoImage as string));

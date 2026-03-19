@@ -13,14 +13,6 @@ export const STORAGE_KEYS = {
   SESSION: 'nexto_labs_v6_session'
 };
 
-export const HARSH_MESSAGES = [
-  "인증 코드가 유효하지 않습니다.",
-  "접근 권한이 거부되었습니다.",
-  "올바른 인증 절차를 따르십시오.",
-  "시스템 보안 위반 감지. 다시 입력하십시오.",
-  "데이터베이스 접근을 위해서는 유효한 코드가 필요합니다."
-];
-
 export const DEFAULT_SCOPE_CATEGORIES = [
   { id: "ip_biz", title: "콘텐츠 IP 비즈니스", desc: "K-POP 기반의 독창적 콘텐츠 제작 및 아티스트 팬덤 매니지먼트" },
   { id: "beauty", title: "전략적 뷰티 유통", desc: "글로벌 뷰티 브랜드의 온·오프라인 통합 유통 및 타겟팅 프로모션" },

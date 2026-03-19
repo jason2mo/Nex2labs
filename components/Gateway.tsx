@@ -1,7 +1,16 @@
 
 import React, { useState } from 'react';
-import { MASTER_ADMIN_CODE, HARSH_MESSAGES } from '../constants';
 import { Customer, Admin, Session } from '../types';
+
+const MASTER_ADMIN_CODE = "0316";
+
+const HARSH_MESSAGES = [
+  "인증 코드가 유효하지 않습니다.",
+  "접근 권한이 거부되었습니다.",
+  "올바른 인증 절차를 따르십시오.",
+  "시스템 보안 위반 감지. 다시 입력하십시오.",
+  "데이터베이스 접근을 위해서는 유효한 코드가 필요합니다."
+];
 
 interface GatewayProps {
   brandName: string;
