@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, ShieldCheck } from 'lucide-react';
 import { Admin } from '../types';
+import { STORAGE_KEYS } from '../constants';
 
 interface AdminViewProps {
   admins: Admin[];
@@ -17,7 +18,10 @@ const AdminView: React.FC<AdminViewProps> = ({
     e.preventDefault();
     if (admins.some(a => a.code === af.code.toUpperCase())) return alert('이미 존재하는 관리자 코드입니다.');
     const newId = `a_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setAdmins([{ ...af, id: newId, code: af.code.toUpperCase(), createdAt: new Date().toISOString() }, ...admins]);
+    const newAdmin = { ...af, id: newId, code: af.code.toUpperCase(), createdAt: new Date().toISOString() };
+    setAdmins([newAdmin, ...admins]);
+    // 即时保存到 localStorage，防止 isAppReady 还未 true 时数据丢失
+    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify([newAdmin, ...admins]));
     setAf({ name: '', code: '' });
   };
 

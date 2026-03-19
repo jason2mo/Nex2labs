@@ -226,14 +226,14 @@ const App: React.FC = () => {
           <button 
             type="button" 
             onClick={() => handleNavigate('home')} 
-            className="px-2 py-2"
+            className="px-2 py-2 flex items-center shrink-0 overflow-hidden"
           >
              {(homeData.logoBackgroundColor ?? 'transparent') !== 'transparent' ? (
-              <div className="px-2 py-1 inline-block" style={{ backgroundColor: homeData.logoBackgroundColor }}>
-                <img src={homeData.logoImage || '/logo.png'} className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left" alt={homeData.brandName} />
+              <div className="px-2 py-1 inline-block max-h-[34px] flex items-center" style={{ backgroundColor: homeData.logoBackgroundColor }}>
+                <img src={homeData.logoImage || '/logo.png'} className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left shrink-0" style={{ maxHeight: 34, maxWidth: 159 }} alt={homeData.brandName} />
               </div>
             ) : (
-              <img src={homeData.logoImage || '/logo.png'} className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left" alt={homeData.brandName} />
+              <img src={homeData.logoImage || '/logo.png'} className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left shrink-0" style={{ maxHeight: 34, maxWidth: 159 }} alt={homeData.brandName} />
             )}
           </button>
           
