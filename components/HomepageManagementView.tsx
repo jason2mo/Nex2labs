@@ -56,29 +56,6 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     version: 1,
   });
 
-  const handlePushToGithub = async () => {
-    const token = getStoredToken();
-    if (!token) {
-      setSyncStatus({ type: 'idle', message: '먼저 GitHub Token을 설정해주세요.', result: 'error' });
-      return;
-    }
-    setSyncStatus({ type: 'pushing', message: 'GitHub에 업로드 중...' });
-    try {
-      const result = await saveToRepo(buildSyncData(), token);
-      if (result.success) {
-        setSyncStatus({
-          type: 'idle',
-          message: `동기화 완료! 모든 기기에서 자동 반영됩니다.`,
-          result: 'success',
-        });
-      } else {
-        setSyncStatus({ type: 'idle', message: result.error || '저장 실패', result: 'error' });
-      }
-    } catch (err) {
-      setSyncStatus({ type: 'idle', message: `저장 중 오류: ${(err as Error).message}`, result: 'error' });
-    }
-  };
-
   const handlePullFromGithub = async () => {
     setSyncStatus({ type: 'pulling', message: 'GitHub에서 데이터 가져오는 중...' });
     try {
@@ -134,20 +111,34 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     ];
   });
 
-  const handleManualSave = () => {
-    // 즉시 localStorage에 저장
+  const handleManualSave = async () => {
+    // 1. 先保存到 localStorage
     localStorage.setItem(STORAGE_KEYS.HOME_DATA, JSON.stringify(homeData));
     localStorage.setItem(STORAGE_KEYS.SCOPE_POSTS, JSON.stringify(scopePosts));
     localStorage.setItem(STORAGE_KEYS.SCOPE_CATEGORIES, JSON.stringify(scopeCategories));
     setIsSaving(true);
+    setSaveSuccess(false);
+
+    const token = getStoredToken();
+    if (token) {
+      setSyncStatus({ type: 'pushing', message: '로컬 저장 후 GitHub에 동기화 중...' });
+      try {
+        const result = await saveToRepo(buildSyncData(), token);
+        if (result.success) {
+          setSyncStatus({ type: 'idle', message: '로컬 + GitHub 저장 완료!', result: 'success' });
+        } else {
+          setSyncStatus({ type: 'idle', message: result.error || 'GitHub 저장 실패', result: 'error' });
+        }
+      } catch (err) {
+        setSyncStatus({ type: 'idle', message: `GitHub 동기화 오류: ${(err as Error).message}`, result: 'error' });
+      }
+    }
+
+    setIsSaving(false);
+    setSaveSuccess(true);
     setTimeout(() => {
-      setIsSaving(false);
-      setSaveSuccess(true);
-      // 성공 메시지 표시 후 페이지 새로고침
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    }, 600);
+      window.location.reload();
+    }, 1500);
   };
 
   const onDragStart = (e: React.DragEvent, index: number) => {
@@ -855,15 +846,6 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             >
               <Settings size={12} />
               {hasToken ? '설정' : 'TOKEN 설정'}
-            </button>
-
-            <button
-              onClick={handlePushToGithub}
-              disabled={!hasToken || syncStatus.type !== 'idle'}
-              className="flex items-center gap-2 bg-[#FF6B00]/10 border border-[#FF6B00]/30 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#FF6B00] hover:bg-[#FF6B00]/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-            >
-              {syncStatus.type === 'pushing' ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-              GitHub에 저장
             </button>
 
             <button
