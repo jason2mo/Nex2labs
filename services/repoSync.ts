@@ -7,10 +7,14 @@ export const GITHUB_CONFIG = {
   repo: 'Nex2labs',
   branch: 'main',
   dataPath: 'data/home-config.json',
+  /** 图片上传到 main 的此文件夹，网站通过 raw.githubusercontent.com 访问（不依赖 gh-pages） */
+  imagePath: 'images',
 };
 
 // 公开读取 - 无需 Token
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}`;
+// 图片访问地址（main 分支，非 gh-pages，deploy 不会被覆盖）
+const IMG_BASE = `${RAW_BASE}/${GITHUB_CONFIG.imagePath}`;
 
 export interface RepoSyncData {
   homeData: unknown;
@@ -43,10 +47,22 @@ function isDataUrl(s: unknown): s is string {
   return typeof s === 'string' && s.startsWith('data:');
 }
 
+function getExtFromDataUrl(dataUrl: string): string {
+  const m = dataUrl.match(/^data:image\/(\w+);/);
+  return m ? (m[1] === 'jpeg' ? 'jpg' : m[1]) : 'png';
+}
+
+/** 生成唯一的图片文件名 */
+function makeImgName(prefix: string, dataUrl: string, idx?: number): string {
+  const ext = getExtFromDataUrl(dataUrl);
+  const ts = Date.now();
+  return idx !== undefined ? `${prefix}-${idx}-${ts}.${ext}` : `${prefix}-${ts}.${ext}`;
+}
+
 /**
- * 处理图片：logo / loadingLogo 直接保留 base64 在 JSON 中（不转成 URL），
- * 这样任何设备拉取配置后都能显示，不会出现 404 裂图。
- * 其他大图仍尝试上传到 main 的 public/（仅作备份，若部署方式导致访问不到可忽略）。
+ * 将 base64 图片上传到 main 分支的 images/ 目录，
+ * 并将 JSON 中的 base64 替换为 raw.githubusercontent.com URL。
+ * 图片文件在 main 分支，deploy 不会影响它们。
  */
 async function uploadImagesAndReplaceUrls(data: RepoSyncData, token: string): Promise<RepoSyncData> {
   const home = data.homeData as Record<string, unknown>;
@@ -55,54 +71,106 @@ async function uploadImagesAndReplaceUrls(data: RepoSyncData, token: string): Pr
   const out = JSON.parse(JSON.stringify(data)) as RepoSyncData;
   const outHome = out.homeData as Record<string, unknown>;
 
-  // logoImage、loadingLogo 不转为 URL，保留 base64，确保其他设备同步后能正常显示
-  // （若转为 URL 指向 main 的 public/，网站实际从 gh-pages 提供，会 404）
-  if (isDataUrl(home.logoImage)) {
-    outHome.logoImage = home.logoImage;
-  }
-  if (isDataUrl(home.loadingLogo)) {
-    outHome.loadingLogo = home.loadingLogo;
-  }
+  const upload = async (key: string, fileName: string): Promise<string | null> => {
+    const raw = home[key] as string;
+    if (!isDataUrl(raw)) return null;
+    const base64 = raw.split(',')[1];
+    if (!base64) return null;
+    const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
+    const ok = await uploadFileToRepo(path, base64, token);
+    return ok ? `${IMG_BASE}/${fileName}` : null;
+  };
 
-  // 其他单图：保留 base64 以保证跨设备显示，不再上传为单独文件
+  const uploadIdx = async (key: string, prefix: string, idx: number): Promise<string | null> => {
+    const raw = (home[key] as Array<string> | undefined)?.[idx];
+    if (!isDataUrl(raw)) return null;
+    const base64 = raw.split(',')[1];
+    if (!base64) return null;
+    const fileName = `${prefix}-${idx}.${getExtFromDataUrl(raw)}`;
+    const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
+    const ok = await uploadFileToRepo(path, base64, token);
+    return ok ? `${IMG_BASE}/${fileName}` : null;
+  };
+
+  // 主 logo
+  const logoUrl = await upload('logoImage', makeImgName('logo', home.logoImage as string));
+  if (logoUrl) outHome.logoImage = logoUrl;
+
+  // 加载 logo
+  const loadingUrl = await upload('loadingLogo', makeImgName('loading-logo', home.loadingLogo as string));
+  if (loadingUrl) outHome.loadingLogo = loadingUrl;
+
+  // 单图（hero、about）
   for (const key of ['heroImage', 'aboutImage'] as const) {
     if (isDataUrl(home[key])) {
-      outHome[key] = home[key];
+      const url = await upload(key, makeImgName(key, home[key] as string));
+      if (url) outHome[key] = url;
     }
   }
 
-  // 合作伙伴 logo、testimonials、members、scopePosts 的图片一律保留 base64
+  // 合作伙伴 logo
   const partnerLogos = home.partnerLogos as string[] | undefined;
   if (Array.isArray(partnerLogos)) {
-    outHome.partnerLogos = partnerLogos;
+    const newPartners: string[] = [];
+    for (let i = 0; i < partnerLogos.length; i++) {
+      if (isDataUrl(partnerLogos[i])) {
+        const base64 = partnerLogos[i].split(',')[1];
+        const ext = getExtFromDataUrl(partnerLogos[i]);
+        const fileName = `partner-${i}.${ext}`;
+        const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
+        const ok = await uploadFileToRepo(path, base64, token);
+        newPartners.push(ok ? `${IMG_BASE}/${fileName}` : partnerLogos[i]);
+      } else {
+        newPartners.push(partnerLogos[i]);
+      }
+    }
+    outHome.partnerLogos = newPartners;
   }
 
+  // testimonials[].avatar
   const testimonials = home.testimonials as Array<{ avatar?: string | null }> | undefined;
   if (Array.isArray(testimonials)) {
     const outTest = (outHome.testimonials as Array<{ avatar?: string | null }>) || [];
     for (let i = 0; i < testimonials.length; i++) {
       if (outTest[i] && isDataUrl(testimonials[i]?.avatar)) {
-        outTest[i].avatar = testimonials[i].avatar;
+        const base64 = testimonials[i].avatar!.split(',')[1];
+        const ext = getExtFromDataUrl(testimonials[i].avatar!);
+        const fileName = `testimonial-avatar-${i}.${ext}`;
+        const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
+        const ok = await uploadFileToRepo(path, base64, token);
+        if (ok) outTest[i].avatar = `${IMG_BASE}/${fileName}`;
       }
     }
   }
 
+  // members[].image
   const members = home.members as Array<{ image?: string | null }> | undefined;
   if (Array.isArray(members)) {
     const outMembers = (outHome.members as Array<{ image?: string | null }>) || [];
     for (let i = 0; i < members.length; i++) {
       if (outMembers[i] && isDataUrl(members[i]?.image)) {
-        outMembers[i].image = members[i].image;
+        const base64 = members[i].image!.split(',')[1];
+        const ext = getExtFromDataUrl(members[i].image!);
+        const fileName = `member-${i}.${ext}`;
+        const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
+        const ok = await uploadFileToRepo(path, base64, token);
+        if (ok) outMembers[i].image = `${IMG_BASE}/${fileName}`;
       }
     }
   }
 
+  // scopePosts[].imageUrl
   const inPosts = data.scopePosts as Array<{ imageUrl?: string | null }>;
-  const posts = out.scopePosts as Array<{ imageUrl?: string | null }>;
-  if (Array.isArray(inPosts) && Array.isArray(posts)) {
+  const outPosts = out.scopePosts as Array<{ imageUrl?: string | null }>;
+  if (Array.isArray(inPosts) && Array.isArray(outPosts)) {
     for (let i = 0; i < inPosts.length; i++) {
-      if (posts[i] && isDataUrl(inPosts[i]?.imageUrl)) {
-        posts[i].imageUrl = inPosts[i].imageUrl;
+      if (outPosts[i] && isDataUrl(inPosts[i]?.imageUrl)) {
+        const base64 = inPosts[i].imageUrl!.split(',')[1];
+        const ext = getExtFromDataUrl(inPosts[i].imageUrl!);
+        const fileName = `scope-post-${i}.${ext}`;
+        const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
+        const ok = await uploadFileToRepo(path, base64, token);
+        if (ok) outPosts[i].imageUrl = `${IMG_BASE}/${fileName}`;
       }
     }
   }
@@ -110,11 +178,43 @@ async function uploadImagesAndReplaceUrls(data: RepoSyncData, token: string): Pr
   return out;
 }
 
+/** 上传文件到 main 分支（images/ 目录，deploy 时不会被覆盖） */
+async function uploadFileToRepo(path: string, base64Content: string, token: string): Promise<boolean> {
+  try {
+    let sha: string | undefined;
+    const getRes = await fetch(`${API_BASE}/contents/${path}?ref=${GITHUB_CONFIG.branch}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (getRes.ok) {
+      const info = await getRes.json();
+      sha = info.sha;
+    }
+    const payload: Record<string, unknown> = {
+      message: `Upload asset: ${path}`,
+      content: base64Content,
+      branch: GITHUB_CONFIG.branch,
+    };
+    if (sha) payload.sha = sha;
+    const res = await fetch(`${API_BASE}/contents/${path}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/vnd.github+json',
+      },
+      body: JSON.stringify(payload),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function saveToRepo(data: RepoSyncData, token: string): Promise<{ success: boolean; url?: string; error?: string }> {
   const errors: string[] = [];
 
   try {
-    // 先把 base64 图片上传到 public/，并得到替换成 URL 后的 data
+    // 上传 base64 图片到 main 的 images/，并替换 JSON 中的路径为 URL
     try {
       const dataToSave = await uploadImagesAndReplaceUrls(data, token);
       data = dataToSave;
