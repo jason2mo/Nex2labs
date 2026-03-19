@@ -48,9 +48,19 @@ const App: React.FC = () => {
       setSyncError(null);
       try {
         const data = await fetchPublicData();
-        if (data?.homeData) setHomeData(data.homeData as HomeData);
-        if (data?.scopePosts) setScopePosts(data.scopePosts as ScopePost[]);
-        if (data?.scopeCategories) setScopeCategories(data.scopeCategories as ScopeCategory[]);
+        if (data?.homeData) {
+          const merged = { ...DEFAULT_HOME_DATA, ...(data.homeData as Partial<HomeData>) };
+          setHomeData(merged);
+          localStorage.setItem(STORAGE_KEYS.HOME_DATA, JSON.stringify(merged));
+        }
+        if (data?.scopePosts) {
+          setScopePosts(data.scopePosts as ScopePost[]);
+          localStorage.setItem(STORAGE_KEYS.SCOPE_POSTS, JSON.stringify(data.scopePosts));
+        }
+        if (data?.scopeCategories) {
+          setScopeCategories(data.scopeCategories as ScopeCategory[]);
+          localStorage.setItem(STORAGE_KEYS.SCOPE_CATEGORIES, JSON.stringify(data.scopeCategories));
+        }
       } catch (err) {
         console.warn('同步失败，使用本地数据:', err);
       } finally {

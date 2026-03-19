@@ -73,7 +73,7 @@ async function uploadImagesAndReplaceUrls(data: RepoSyncData, token: string): Pr
 
   const upload = async (key: string, fileName: string): Promise<string | null> => {
     const raw = home[key] as string;
-    if (!isDataUrl(raw)) return null;
+    if (!raw || !isDataUrl(raw)) return null;
     const base64 = raw.split(',')[1];
     if (!base64) return null;
     const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
@@ -93,12 +93,16 @@ async function uploadImagesAndReplaceUrls(data: RepoSyncData, token: string): Pr
   };
 
   // 主 logo
-  const logoUrl = await upload('logoImage', makeImgName('logo', home.logoImage as string));
-  if (logoUrl) outHome.logoImage = logoUrl;
+  if (home.logoImage && isDataUrl(home.logoImage as string)) {
+    const logoUrl = await upload('logoImage', makeImgName('logo', home.logoImage as string));
+    if (logoUrl) outHome.logoImage = logoUrl;
+  }
 
   // 加载 logo
-  const loadingUrl = await upload('loadingLogo', makeImgName('loading-logo', home.loadingLogo as string));
-  if (loadingUrl) outHome.loadingLogo = loadingUrl;
+  if (home.loadingLogo && isDataUrl(home.loadingLogo as string)) {
+    const loadingUrl = await upload('loadingLogo', makeImgName('loading-logo', home.loadingLogo as string));
+    if (loadingUrl) outHome.loadingLogo = loadingUrl;
+  }
 
   // 单图（hero、about）
   for (const key of ['heroImage', 'aboutImage'] as const) {
