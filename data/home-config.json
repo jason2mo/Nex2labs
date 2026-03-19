@@ -10,7 +10,7 @@
     "mainTitleFontSize": "72",
     "description": "넥스투는 K-POP 아티스트 IP와 프리미엄 뷰티 브랜드를 전략적으로 결합하여, 단순한 이벤트를 넘어 글로벌 시장에 새로운 산업적 가치를 창출하는 원스톱 문화 혁신 기업입니다",
     "descriptionFontSize": "16",
-    "heroImage": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/heroImage-1773947821893.jpg",
+    "heroImage": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/heroImage-1773947842917.jpg",
     "realityIndex": "47.2%",
     "trustedCount": "20+",
     "partnerLogos": [],
@@ -138,6 +138,6 @@
       "desc": "비즈니스 확장 및 연동"
     }
   ],
-  "timestamp": "2026-03-19T19:17:01.893Z",
+  "timestamp": "2026-03-19T19:17:22.916Z",
   "version": 1
 }
