@@ -52,11 +52,10 @@ function getExtFromDataUrl(dataUrl: string): string {
   return m ? (m[1] === 'jpeg' ? 'jpg' : m[1]) : 'png';
 }
 
-/** 生成唯一的图片文件名 */
-function makeImgName(prefix: string, dataUrl: string, idx?: number): string {
+/** 固定图片文件名（同类型覆盖，不累积） */
+function getFixedImgName(prefix: string, dataUrl: string, idx?: number): string {
   const ext = getExtFromDataUrl(dataUrl);
-  const ts = Date.now();
-  return idx !== undefined ? `${prefix}-${idx}-${ts}.${ext}` : `${prefix}-${ts}.${ext}`;
+  return idx !== undefined ? `${prefix}-${idx}.${ext}` : `${prefix}.${ext}`;
 }
 
 /**
@@ -83,20 +82,20 @@ async function uploadImagesAndReplaceUrls(data: RepoSyncData, token: string): Pr
 
   // 主 logo
   if (home.logoImage && isDataUrl(home.logoImage as string)) {
-    const logoUrl = await upload('logoImage', makeImgName('logo', home.logoImage as string));
+    const logoUrl = await upload('logoImage', getFixedImgName('logo', home.logoImage as string));
     if (logoUrl) outHome.logoImage = logoUrl;
   }
 
   // 加载 logo
   if (home.loadingLogo && isDataUrl(home.loadingLogo as string)) {
-    const loadingUrl = await upload('loadingLogo', makeImgName('loading-logo', home.loadingLogo as string));
+    const loadingUrl = await upload('loadingLogo', getFixedImgName('loading-logo', home.loadingLogo as string));
     if (loadingUrl) outHome.loadingLogo = loadingUrl;
   }
 
   // 单图（hero、about）
   for (const key of ['heroImage', 'aboutImage'] as const) {
     if (isDataUrl(home[key])) {
-      const url = await upload(key, makeImgName(key, home[key] as string));
+      const url = await upload(key, getFixedImgName(key, home[key] as string));
       if (url) outHome[key] = url;
     }
   }
