@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Key, ChevronDown, Layout, Settings, User, ShoppingBag, Mail, RefreshCw } from 'lucide-react';
 import { Product, Order, Customer, Admin, Session, ScopePost, HomeData, ScopeCategory, Inquiry } from './types';
-import { STORAGE_KEYS, DEFAULT_HOME_DATA, DEFAULT_SCOPE_CATEGORIES } from './constants';
+import { DEFAULT_HOME_DATA, DEFAULT_SCOPE_CATEGORIES } from './constants';
 import Gateway from './components/Gateway';
 import AdminView from './components/AdminView';
 import CustomerView from './components/CustomerView';
@@ -12,7 +12,7 @@ import HomepageManagementView from './components/HomepageManagementView';
 import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
-import { fetchPublicData, getStoredToken } from './services/repoSync';
+import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, clearOldData } from './services/dataService';
 
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
 
@@ -49,17 +49,16 @@ const App: React.FC = () => {
       try {
         const data = await fetchPublicData();
         if (data?.homeData) {
-          const merged = { ...DEFAULT_HOME_DATA, ...(data.homeData as Partial<HomeData>) };
-          setHomeData(merged);
-          localStorage.setItem(STORAGE_KEYS.HOME_DATA, JSON.stringify(merged));
+          setHomeData(data.homeData);
+          saveToLocalStorage({ homeData: data.homeData, scopePosts, scopeCategories });
         }
         if (data?.scopePosts) {
-          setScopePosts(data.scopePosts as ScopePost[]);
-          localStorage.setItem(STORAGE_KEYS.SCOPE_POSTS, JSON.stringify(data.scopePosts));
+          setScopePosts(data.scopePosts);
+          saveToLocalStorage({ homeData, scopePosts: data.scopePosts, scopeCategories });
         }
         if (data?.scopeCategories) {
-          setScopeCategories(data.scopeCategories as ScopeCategory[]);
-          localStorage.setItem(STORAGE_KEYS.SCOPE_CATEGORIES, JSON.stringify(data.scopeCategories));
+          setScopeCategories(data.scopeCategories);
+          saveToLocalStorage({ homeData, scopePosts, scopeCategories: data.scopeCategories });
         }
       } catch (err) {
         console.warn('同步失败，使用本地数据:', err);
@@ -86,27 +85,16 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const p = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-    const o = localStorage.getItem(STORAGE_KEYS.ORDERS);
-    const c = localStorage.getItem(STORAGE_KEYS.CUSTOMERS);
-    const a = localStorage.getItem(STORAGE_KEYS.ADMINS);
-    const inq = localStorage.getItem(STORAGE_KEYS.INQUIRIES);
-    const sp = localStorage.getItem(STORAGE_KEYS.SCOPE_POSTS);
-    const sc = localStorage.getItem(STORAGE_KEYS.SCOPE_CATEGORIES);
-    const hd = localStorage.getItem(STORAGE_KEYS.HOME_DATA);
-    const sess = localStorage.getItem(STORAGE_KEYS.SESSION);
+    const sess = localStorage.getItem('nexto_labs_v6_session');
     
-    if (p) setProducts(JSON.parse(p));
-    if (o) setOrders(JSON.parse(o));
-    if (c) setCustomers(JSON.parse(c));
-    if (a) setAdmins(JSON.parse(a));
-    if (inq) setInquiries(JSON.parse(inq));
-    if (sp) setScopePosts(JSON.parse(sp));
-    if (sc) setScopeCategories(JSON.parse(sc));
-    if (hd) {
-      const parsedData = JSON.parse(hd);
-      setHomeData({ ...DEFAULT_HOME_DATA, ...parsedData });
-    }
+    // 从 localStorage 加载数据
+    const savedData = loadFromLocalStorage();
+    setHomeData(savedData.homeData);
+    setScopePosts(savedData.scopePosts);
+    setScopeCategories(savedData.scopeCategories);
+
+    // 清理旧数据
+    clearOldData();
     
     if (sess) {
       try {
@@ -118,28 +106,21 @@ const App: React.FC = () => {
           setCurrentView('collection');
         }
       } catch (e) {
-        localStorage.removeItem(STORAGE_KEYS.SESSION);
+        localStorage.removeItem('nexto_labs_v6_session');
       }
     }
     
     setTimeout(() => setIsAppReady(true), 1200);
   }, []);
 
-  useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products)); }, [products, isAppReady]);
-  useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders)); }, [orders, isAppReady]);
-  useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers)); }, [customers, isAppReady]);
-  useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(admins)); }, [admins, isAppReady]);
-  useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(inquiries)); }, [inquiries, isAppReady]);
-  useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.SCOPE_POSTS, JSON.stringify(scopePosts)); }, [scopePosts, isAppReady]);
-  useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.SCOPE_CATEGORIES, JSON.stringify(scopeCategories)); }, [scopeCategories, isAppReady]);
-  useEffect(() => { if (isAppReady) localStorage.setItem(STORAGE_KEYS.HOME_DATA, JSON.stringify(homeData)); }, [homeData, isAppReady]);
+  useEffect(() => { if (isAppReady) saveToLocalStorage({ homeData, scopePosts, scopeCategories }); }, [homeData, scopePosts, scopeCategories, isAppReady]);
   
   useEffect(() => { 
     if (isAppReady) {
       if (session) {
-        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+        localStorage.setItem('nexto_labs_v6_session', JSON.stringify(session));
       } else {
-        localStorage.removeItem(STORAGE_KEYS.SESSION);
+        localStorage.removeItem('nexto_labs_v6_session');
       }
     }
   }, [session, isAppReady]);

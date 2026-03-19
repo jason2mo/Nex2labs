@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Github, Check, AlertCircle, ExternalLink, Trash2, Loader2 } from 'lucide-react';
-import { getStoredToken, saveToken, clearToken, validateToken, GITHUB_CONFIG } from '../services/repoSync';
+import { getStoredToken, saveToken, clearToken, validateToken, GITHUB_CONFIG } from '../services/dataService';
 
 interface GithubSettingsModalProps {
   onClose: () => void;
@@ -70,7 +70,7 @@ export const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClos
             관리자가 데이터를 저장할 때만 Token이 필요합니다.
           </p>
           <p className="text-[9px] text-white/30 mt-2">
-            저장 위치: <code className="text-[#FF6B00]">{GITHUB_CONFIG.dataPath}</code>
+            저장 위치: <code className="text-[#FF6B00]">{GITHUB_CONFIG.dataPath}/{GITHUB_CONFIG.homeFile}, {GITHUB_CONFIG.postsFile}, {GITHUB_CONFIG.categoriesFile}</code>
           </p>
           <a
             href="https://github.com/settings/tokens/new?scopes=repo&description=NexTo%20Labs%20Data"

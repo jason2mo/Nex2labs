@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, Clock, X, Check, Save, MessageSquare, Loader2, Upload, Github, Download, RefreshCw, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
 import { HomeData, ScopePost, ScopeCategory, TestimonialItem, FooterLink, MemberItem } from '../types';
-import { STORAGE_KEYS } from '../constants';
 import TeamView from './TeamView';
 import { GithubSettingsModal } from './GithubSettingsModal';
-import { saveToRepo, getStoredToken, GITHUB_CONFIG } from '../services/repoSync';
+import { saveAllData, saveToLocalStorage, getStoredToken, GITHUB_CONFIG } from '../services/dataService';
+
+// 公开数据基础 URL
+const DATA_BASE = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.dataPath}`;
 
 interface HomepageManagementViewProps {
   homeData: HomeData;
@@ -51,26 +53,24 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     homeData,
     scopePosts,
     scopeCategories,
-    timestamp: new Date().toISOString(),
-    version: 1,
   });
 
   const handlePullFromGithub = async () => {
     setSyncStatus({ type: 'pulling', message: 'GitHub에서 데이터 가져오는 중...' });
     try {
-      const response = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.dataPath}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          setSyncStatus({ type: 'idle', message: 'GitHub에 저장된 데이터가 없습니다.', result: 'error' });
-        } else {
-          setSyncStatus({ type: 'idle', message: '데이터를 가져올 수 없습니다.', result: 'error' });
-        }
-        return;
-      }
-      const data = await response.json();
-      if (data.homeData) setHomeData(data.homeData as HomeData);
-      if (data.scopePosts) setScopePosts(data.scopePosts as ScopePost[]);
-      if (data.scopeCategories) setScopeCategories(data.scopeCategories as ScopeCategory[]);
+      const [homeRes, postsRes, categoriesRes] = await Promise.all([
+        fetch(`${DATA_BASE}/${GITHUB_CONFIG.homeFile}`),
+        fetch(`${DATA_BASE}/${GITHUB_CONFIG.postsFile}`),
+        fetch(`${DATA_BASE}/${GITHUB_CONFIG.categoriesFile}`),
+      ]);
+
+      if (homeRes.ok) setHomeData({ ...homeData, ...(await homeRes.json()) });
+      if (postsRes.ok) setScopePosts(await postsRes.json());
+      if (categoriesRes.ok) setScopeCategories(await categoriesRes.json());
+      
+      // 保存到 localStorage
+      saveToLocalStorage({ homeData, scopePosts, scopeCategories });
+      
       setSyncStatus({ type: 'idle', message: 'GitHub에서 데이터를 복원했습니다!', result: 'success' });
     } catch (err) {
       setSyncStatus({ type: 'idle', message: (err as Error).message, result: 'error' });
@@ -111,10 +111,8 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
   });
 
   const handleManualSave = async () => {
-    // 1. 先保存到 localStorage
-    localStorage.setItem(STORAGE_KEYS.HOME_DATA, JSON.stringify(homeData));
-    localStorage.setItem(STORAGE_KEYS.SCOPE_POSTS, JSON.stringify(scopePosts));
-    localStorage.setItem(STORAGE_KEYS.SCOPE_CATEGORIES, JSON.stringify(scopeCategories));
+    // 1. 保存到 localStorage
+    saveToLocalStorage({ homeData, scopePosts, scopeCategories });
     setIsSaving(true);
     setSaveSuccess(false);
 
@@ -122,7 +120,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     if (token) {
       setSyncStatus({ type: 'pushing', message: '로컬 저장 후 GitHub에 동기화 중...' });
       try {
-        const result = await saveToRepo(buildSyncData(), token);
+        const result = await saveAllData({ homeData, scopePosts, scopeCategories }, token);
         if (result.success) {
           setSyncStatus({ type: 'idle', message: '로컬 + GitHub 저장 완료! 다른 기기에서도 곧 반영됩니다.', result: 'success' });
         } else {
