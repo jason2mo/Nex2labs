@@ -194,23 +194,43 @@ async function uploadImagesAndReplaceUrls(data: RepoSyncData, token: string): Pr
 }
 
 export async function saveToRepo(data: RepoSyncData, token: string): Promise<{ success: boolean; url?: string; error?: string }> {
+  const errors: string[] = [];
+
   try {
     // 先把 base64 图片上传到 public/，并得到替换成 URL 后的 data
-    const dataToSave = await uploadImagesAndReplaceUrls(data, token);
+    try {
+      const dataToSave = await uploadImagesAndReplaceUrls(data, token);
+      data = dataToSave;
+    } catch (e) {
+      const msg = `图片上传失败: ${(e as Error).message}，继续保存配置...`;
+      console.warn(msg);
+      errors.push(msg);
+    }
 
-    const content = JSON.stringify(dataToSave, null, 2);
+    const content = JSON.stringify(data, null, 2);
     const encodedContent = btoa(unescape(encodeURIComponent(content)));
 
+    // 先获取当前文件 SHA
     let sha: string | undefined;
     try {
+      console.log('[saveToRepo] 获取文件 SHA...');
       const getResponse = await fetch(`${API_BASE}/contents/${GITHUB_CONFIG.dataPath}`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
       });
+      console.log('[saveToRepo] GET /contents response:', getResponse.status, getResponse.statusText);
       if (getResponse.ok) {
         const info = await getResponse.json();
         sha = info.sha;
+        console.log('[saveToRepo] 当前 SHA:', sha);
+      } else if (getResponse.status === 404) {
+        console.log('[saveToRepo] 文件不存在，将创建新文件');
+      } else {
+        const errText = await getResponse.text();
+        errors.push(`获取文件信息失败: HTTP ${getResponse.status} ${errText}`);
       }
-    } catch { /* 文件可能不存在 */ }
+    } catch (e) {
+      errors.push(`获取 SHA 时网络错误: ${(e as Error).message}`);
+    }
 
     const payload: Record<string, unknown> = {
       message: `Update home config - ${new Date().toLocaleString()}`,
@@ -219,6 +239,7 @@ export async function saveToRepo(data: RepoSyncData, token: string): Promise<{ s
     };
     if (sha) payload.sha = sha;
 
+    console.log('[saveToRepo] 写入文件...');
     const response = await fetch(`${API_BASE}/contents/${GITHUB_CONFIG.dataPath}`, {
       method: 'PUT',
       headers: {
@@ -229,15 +250,26 @@ export async function saveToRepo(data: RepoSyncData, token: string): Promise<{ s
       body: JSON.stringify(payload),
     });
 
+    console.log('[saveToRepo] PUT /contents response:', response.status, response.statusText);
+    const responseText = await response.text();
+    console.log('[saveToRepo] PUT 响应体:', responseText.substring(0, 500));
+
     if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      return { success: false, error: err.message || `HTTP ${response.status}` };
+      let errMsg = `HTTP ${response.status}`;
+      try {
+        const errJson = JSON.parse(responseText);
+        errMsg = errJson.message || errJson.error || errMsg;
+        if (errJson.errors) errMsg += ` | ${JSON.stringify(errJson.errors)}`;
+      } catch { /* keep status text */ }
+      return { success: false, error: `[GitHub API] ${errMsg}${errors.length ? ' | ' + errors.join('; ') : ''}` };
     }
 
-    const result = await response.json();
+    const result = JSON.parse(responseText);
     return { success: true, url: result.content?.html_url };
   } catch (error) {
-    return { success: false, error: (error as Error).message };
+    const msg = (error as Error).message;
+    console.error('[saveToRepo] 捕获异常:', msg);
+    return { success: false, error: `[Exception] ${msg}${errors.length ? ' | ' + errors.join('; ') : ''}` };
   }
 }
 

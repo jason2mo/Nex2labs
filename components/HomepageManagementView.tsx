@@ -75,7 +75,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         setSyncStatus({ type: 'idle', message: result.error || '저장 실패', result: 'error' });
       }
     } catch (err) {
-      setSyncStatus({ type: 'idle', message: (err as Error).message, result: 'error' });
+      setSyncStatus({ type: 'idle', message: `저장 중 오류: ${(err as Error).message}`, result: 'error' });
     }
   };
 
