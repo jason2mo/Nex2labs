@@ -1,27 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Github, Check, AlertCircle, ExternalLink, Trash2, Loader2 } from 'lucide-react';
-import {
-  getStoredToken, saveToken, clearToken, validateToken,
-  getStoredGistId, getLastSyncTime
-} from '../services/githubSync';
+import { getStoredToken, saveToken, clearToken, validateToken, GITHUB_CONFIG } from '../services/repoSync';
 
 interface GithubSettingsModalProps {
   onClose: () => void;
 }
 
-const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) => {
+export const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) => {
   const [token, setToken] = useState('');
-  const [gistId, setGistId] = useState('');
-  const [gistUrl, setGistUrl] = useState('');
-  const [lastSync, setLastSync] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setToken(getStoredToken() || '');
-    setGistId(getStoredGistId() || '');
-    setLastSync(getLastSyncTime());
   }, []);
 
   const handleValidate = async () => {
@@ -31,9 +23,9 @@ const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) =>
     const result = await validateToken(token.trim());
     setIsValidating(false);
     if (result.valid) {
-      setValidationResult({ ok: true, message: `유효한 Token입니다. GitHub 사용자: @${result.username}` });
+      setValidationResult({ ok: true, message: `유효한 Token입니다! (@${result.username}) 이제 데이터를 GitHub에 저장할 수 있습니다.` });
     } else {
-      setValidationResult({ ok: false, message: 'Token이 유효하지 않습니다. gist 권한(Scope)이 있는지 확인해주세요.' });
+      setValidationResult({ ok: false, message: 'Token이 유효하지 않습니다. repo 권한이 있는지 확인해주세요.' });
     }
   };
 
@@ -43,9 +35,6 @@ const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) =>
       return;
     }
     saveToken(token.trim());
-    if (gistId.trim()) {
-      localStorage.setItem('nexto_gist_id', gistId.trim());
-    }
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
@@ -54,10 +43,9 @@ const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) =>
   };
 
   const handleDisconnect = () => {
-    if (window.confirm('GitHub 연결을 해제하시겠습니까? 동기화된 데이터는 GitHub Gist에 그대로 유지됩니다.')) {
+    if (window.confirm('GitHub 연결을 해제하시겠습니까?')) {
       clearToken();
       setToken('');
-      setGistId('');
       setValidationResult(null);
       onClose();
     }
@@ -66,7 +54,6 @@ const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) =>
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-[#0a0a0a] border-2 border-white/20 w-full max-w-lg p-8 space-y-6 relative">
-        {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Github size={20} className="text-white" />
@@ -75,25 +62,26 @@ const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) =>
           <button onClick={onClose} className="text-white/40 hover:text-white transition-all"><X size={18} /></button>
         </div>
 
-        {/* Info box */}
-        <div className="bg-white/5 border border-white/10 p-4 space-y-1">
-          <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">연동 방식: GitHub Gist</p>
+        <div className="bg-white/5 border border-white/10 p-4 space-y-2">
+          <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">연동 방식: GitHub Repository</p>
           <p className="text-[10px] text-white/40 leading-relaxed">
-            데이터를 GitHub Gist(비밀/Unlisted)에 저장합니다.<br />
-            각 기기에서 동일한 Token을 입력하면 데이터를 동기화할 수 있습니다.<br />
-            Token에 <span className="text-[#FF6B00]">gist</span> 권한이 필요합니다.
+            데이터를 <span className="text-[#FF6B00]">GitHub Repository</span>의 파일에 저장합니다.<br />
+            <strong className="text-white/60">고객은 Token 없이도 자동으로 데이터를 가져옵니다.</strong><br />
+            관리자가 데이터를 저장할 때만 Token이 필요합니다.
+          </p>
+          <p className="text-[9px] text-white/30 mt-2">
+            저장 위치: <code className="text-[#FF6B00]">{GITHUB_CONFIG.dataPath}</code>
           </p>
           <a
-            href="https://github.com/settings/tokens/new?scopes=gist&description=NexTo%20Labs%20Sync"
+            href="https://github.com/settings/tokens/new?scopes=repo&description=NexTo%20Labs%20Data"
             target="_blank"
-            reln="noopener noreferrer"
+            rel="noopener noreferrer"
             className="flex items-center gap-1 text-[10px] font-black text-[#FF6B00] hover:underline mt-2"
           >
-            <ExternalLink size={10} /> GitHub Token 생성하기
+            <ExternalLink size={10} /> GitHub Token 생성하기 (repo 권한 필요)
           </a>
         </div>
 
-        {/* Token input */}
         <div className="space-y-2">
           <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block">
             Personal Access Token
@@ -123,34 +111,6 @@ const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) =>
           )}
         </div>
 
-        {/* Gist ID (auto-detected, shown for info) */}
-        {gistId && (
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block">
-              연결된 Gist ID
-            </label>
-            <div className="bg-white/5 border border-white/10 px-4 py-3 flex justify-between items-center">
-              <code className="text-[10px] font-mono text-white/60">{gistId}</code>
-              <a
-                href={`https://gist.github.com/${gistId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] font-black text-[#FF6B00] hover:underline flex items-center gap-1"
-              >
-                <ExternalLink size={10} /> 열기
-              </a>
-            </div>
-          </div>
-        )}
-
-        {/* Last sync */}
-        {lastSync && (
-          <div className="text-[10px] text-white/40">
-            마지막 동기화: <span className="font-black text-white/60">{new Date(lastSync).toLocaleString()}</span>
-          </div>
-        )}
-
-        {/* Actions */}
         <div className="flex gap-3 pt-2">
           <button
             onClick={handleSave}
@@ -173,5 +133,3 @@ const GithubSettingsModal: React.FC<GithubSettingsModalProps> = ({ onClose }) =>
     </div>
   );
 };
-
-export default GithubSettingsModal;

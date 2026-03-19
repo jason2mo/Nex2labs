@@ -4,8 +4,8 @@ import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, In
 import { HomeData, ScopePost, ScopeCategory, TestimonialItem, FooterLink, MemberItem } from '../types';
 import { STORAGE_KEYS } from '../constants';
 import TeamView from './TeamView';
-import GithubSettingsModal from './GithubSettingsModal';
-import { pushToGithub, pullFromGithub, downloadAsJson, getStoredToken, getLastSyncTime, SyncData } from '../services/githubSync';
+import { GithubSettingsModal } from './GithubSettingsModal';
+import { saveToRepo, getStoredToken, GITHUB_CONFIG } from '../services/repoSync';
 
 interface HomepageManagementViewProps {
   homeData: HomeData;
@@ -48,9 +48,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
   const [showGithubSettings, setShowGithubSettings] = useState(false);
   const [syncStatus, setSyncStatus] = useState<{ type: 'idle' | 'pushing' | 'pulling'; message: string; result?: 'success' | 'error' }>({ type: 'idle', message: '' });
 
-  const lastSync = getLastSyncTime();
-
-  const buildSyncData = (): SyncData => ({
+  const buildSyncData = () => ({
     homeData,
     scopePosts,
     scopeCategories,
@@ -59,36 +57,60 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
   });
 
   const handlePushToGithub = async () => {
+    const token = getStoredToken();
+    if (!token) {
+      setSyncStatus({ type: 'idle', message: '먼저 GitHub Token을 설정해주세요.', result: 'error' });
+      return;
+    }
     setSyncStatus({ type: 'pushing', message: 'GitHub에 업로드 중...' });
     try {
-      const result = await pushToGithub(buildSyncData());
-      setSyncStatus({
-        type: 'idle',
-        message: `동기화 완료! Gist URL: ${result.url}`,
-        result: 'success',
-      });
-      setTimeout(() => setSyncStatus(prev => prev.type === 'idle' && prev.result === 'success' ? { type: 'idle', message: '' } : prev), 5000);
+      const result = await saveToRepo(buildSyncData(), token);
+      if (result.success) {
+        setSyncStatus({
+          type: 'idle',
+          message: `동기화 완료! 모든 기기에서 자동 반영됩니다.`,
+          result: 'success',
+        });
+      } else {
+        setSyncStatus({ type: 'idle', message: result.error || '저장 실패', result: 'error' });
+      }
     } catch (err) {
       setSyncStatus({ type: 'idle', message: (err as Error).message, result: 'error' });
     }
   };
 
   const handlePullFromGithub = async () => {
-    setSyncStatus({ type: 'pulling', message: 'GitHub에서 다운로드 중...' });
+    setSyncStatus({ type: 'pulling', message: 'GitHub에서 데이터 가져오는 중...' });
     try {
-      const data = await pullFromGithub();
+      const response = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.dataPath}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          setSyncStatus({ type: 'idle', message: 'GitHub에 저장된 데이터가 없습니다.', result: 'error' });
+        } else {
+          setSyncStatus({ type: 'idle', message: '데이터를 가져올 수 없습니다.', result: 'error' });
+        }
+        return;
+      }
+      const data = await response.json();
       if (data.homeData) setHomeData(data.homeData as HomeData);
       if (data.scopePosts) setScopePosts(data.scopePosts as ScopePost[]);
       if (data.scopeCategories) setScopeCategories(data.scopeCategories as ScopeCategory[]);
       setSyncStatus({ type: 'idle', message: 'GitHub에서 데이터를 복원했습니다!', result: 'success' });
-      setTimeout(() => setSyncStatus(prev => prev.type === 'idle' && prev.result === 'success' ? { type: 'idle', message: '' } : prev), 5000);
     } catch (err) {
       setSyncStatus({ type: 'idle', message: (err as Error).message, result: 'error' });
     }
   };
 
   const handleDownloadJson = () => {
-    downloadAsJson(buildSyncData());
+    const blob = new Blob([JSON.stringify(buildSyncData(), null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nexto-labs-data.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const hasToken = !!getStoredToken();
@@ -805,9 +827,6 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             <div className="flex items-center gap-2 mr-4">
               <Github size={14} className="text-[#FF6B00]" />
               <span className="text-[10px] font-black uppercase tracking-widest text-white/60">GITHUB SYNC</span>
-              {lastSync && (
-                <span className="text-[9px] text-white/30">마지막: {new Date(lastSync).toLocaleString()}</span>
-              )}
             </div>
 
             {/* Sync status */}
@@ -849,7 +868,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
 
             <button
               onClick={handlePullFromGithub}
-              disabled={!hasToken || syncStatus.type !== 'idle'}
+              disabled={syncStatus.type !== 'idle'}
               className="flex items-center gap-2 bg-white/5 border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:border-white/40 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               {syncStatus.type === 'pulling' ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}

@@ -12,7 +12,7 @@ import HomepageManagementView from './components/HomepageManagementView';
 import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
-import { pullFromGithub, getStoredToken, getStoredGistId } from './services/githubSync';
+import { fetchPublicData, getStoredToken } from './services/repoSync';
 
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
 
@@ -41,20 +41,18 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!isAppReady) return;
-    const token = getStoredToken();
-    const gistId = getStoredGistId();
-    if (!token || !gistId) return;
 
+    // 自动从 GitHub 公开获取数据（无需 Token）
     const doSync = async () => {
       setIsSyncing(true);
       setSyncError(null);
       try {
-        const data = await pullFromGithub();
-        if (data.homeData) setHomeData(data.homeData as HomeData);
-        if (data.scopePosts) setScopePosts(data.scopePosts as ScopePost[]);
-        if (data.scopeCategories) setScopeCategories(data.scopeCategories as ScopeCategory[]);
+        const data = await fetchPublicData();
+        if (data?.homeData) setHomeData(data.homeData as HomeData);
+        if (data?.scopePosts) setScopePosts(data.scopePosts as ScopePost[]);
+        if (data?.scopeCategories) setScopeCategories(data.scopeCategories as ScopeCategory[]);
       } catch (err) {
-        setSyncError((err as Error).message);
+        console.warn('同步失败，使用本地数据:', err);
       } finally {
         setIsSyncing(false);
       }
