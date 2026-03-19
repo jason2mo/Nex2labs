@@ -82,7 +82,7 @@
     ],
     "mgmtPreviewLabel": "PREVIEW",
     "loadingSubtext": "세상을 잇는중입니다 끙차><!",
-    "loadingLogo": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/loading-logo-1773946736154.png",
+    "loadingLogo": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/loading-logo-1773946772152.png",
     "loginButtonText": "로그인",
     "loginButtonFontSize": "12",
     "systemStatusText": "시스템 정상 작동 중",
@@ -138,6 +138,6 @@
       "desc": "비즈니스 확장 및 연동"
     }
   ],
-  "timestamp": "2026-03-19T18:58:56.151Z",
+  "timestamp": "2026-03-19T18:59:32.151Z",
   "version": 1
 }
