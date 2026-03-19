@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { LogOut, Key, ChevronDown, Shield, Layout, Settings, User, ShoppingBag, Mail } from 'lucide-react';
+import { LogOut, Key, ChevronDown, Shield, Layout, Settings, User, ShoppingBag, Mail, RefreshCw } from 'lucide-react';
 import { Product, Order, Customer, Admin, Session, ScopePost, HomeData, ScopeCategory, Inquiry } from './types';
 import { STORAGE_KEYS, DEFAULT_HOME_DATA, DEFAULT_SCOPE_CATEGORIES } from './constants';
 import Gateway from './components/Gateway';
@@ -12,6 +12,7 @@ import HomepageManagementView from './components/HomepageManagementView';
 import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
+import { pullFromGithub, getStoredToken, getStoredGistId } from './services/githubSync';
 
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
 
@@ -33,6 +34,34 @@ const App: React.FC = () => {
   const [homeData, setHomeData] = useState<HomeData>(DEFAULT_HOME_DATA);
 
   const unreadInquiriesCount = inquiries.filter(i => !i.isRead).length;
+
+  // GitHub 자동 동기화
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAppReady) return;
+    const token = getStoredToken();
+    const gistId = getStoredGistId();
+    if (!token || !gistId) return;
+
+    const doSync = async () => {
+      setIsSyncing(true);
+      setSyncError(null);
+      try {
+        const data = await pullFromGithub();
+        if (data.homeData) setHomeData(data.homeData as HomeData);
+        if (data.scopePosts) setScopePosts(data.scopePosts as ScopePost[]);
+        if (data.scopeCategories) setScopeCategories(data.scopeCategories as ScopeCategory[]);
+      } catch (err) {
+        setSyncError((err as Error).message);
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    doSync();
+  }, [isAppReady]);
 
   useEffect(() => {
     document.title = homeData.pageTitle || `${homeData.brandName} | 시스템`;
@@ -352,6 +381,18 @@ const App: React.FC = () => {
       </nav>
 
       <main className="max-w-[1500px] mx-auto p-4 md:p-12 w-full flex-1">
+        {isSyncing && (
+          <div className="fixed bottom-6 right-6 bg-black border border-[#FF6B00]/40 px-5 py-3 flex items-center gap-3 z-50 shadow-[5px_5px_0_0_rgba(255,107,0,0.3)] animate-fade-in">
+            <RefreshCw size={14} className="text-[#FF6B00] animate-spin" />
+            <span className="text-[10px] font-black text-white/80 uppercase tracking-widest">GitHub에서 데이터 동기화 중...</span>
+          </div>
+        )}
+        {syncError && (
+          <div className="fixed bottom-6 right-6 bg-black border border-red-500/40 px-5 py-3 z-50 shadow-[5px_5px_0_0_rgba(255,0,0,0.2)] animate-fade-in max-w-xs">
+            <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">GitHub 동기화 실패</p>
+            <p className="text-[9px] text-white/50 mt-1">{syncError}</p>
+          </div>
+        )}
         {renderContent()}
       </main>
 
