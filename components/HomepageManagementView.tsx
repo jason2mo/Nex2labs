@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, Clock, X, Check, Save, MessageSquare, Loader2, Upload, Github, Download, RefreshCw, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, Info, LayoutGrid, Users, Footprints, MousePointerClick, Briefcase, Plus, Command, Video, Play, GripVertical, Database, Globe, Key, User, Link as LinkIcon, Mail, Smartphone, Clock, X, Check, Save, MessageSquare, Loader2, Upload, Github, Download, RefreshCw, AlertCircle, CheckCircle2, ExternalLink, Trash } from 'lucide-react';
 import { HomeData, ScopePost, ScopeCategory, TestimonialItem, FooterLink, MemberItem } from '../types';
 import TeamView from './TeamView';
 import { GithubSettingsModal } from './GithubSettingsModal';
-import { saveAllData, saveToLocalStorage, getStoredToken, GITHUB_CONFIG } from '../services/dataService';
+import { saveAllData, saveToLocalStorage, getStoredToken, clearAllData, GITHUB_CONFIG } from '../services/dataService';
 
 // 公开数据基础 URL
 const DATA_BASE = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.dataPath}`;
@@ -905,6 +905,18 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             >
               <Download size={12} />
               JSON 다운로드
+            </button>
+
+            <button
+              onClick={() => {
+                if (window.confirm('캐시를 삭제하고 GitHub에서 데이터를 다시 불러오시겠습니까?')) {
+                  clearAllData();
+                }
+              }}
+              className="flex items-center gap-2 bg-red-600/20 border border-red-500/40 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-red-400 hover:bg-red-600/30 hover:border-red-500/60 transition-all"
+            >
+              <Trash size={12} />
+              캐시 삭제
             </button>
           </div>
         </div>

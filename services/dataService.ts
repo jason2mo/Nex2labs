@@ -377,4 +377,17 @@ export function clearOldData(): void {
   keysToRemove.forEach(key => localStorage.removeItem(key));
 }
 
+// 清除所有网站缓存数据（强制从 GitHub 重新获取）
+export function clearAllData(): void {
+  const keysToRemove = [
+    STORAGE_KEYS.HOME_DATA,
+    STORAGE_KEYS.SCOPE_POSTS,
+    STORAGE_KEYS.SCOPE_CATEGORIES,
+    STORAGE_KEYS.TOKEN,
+  ];
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+  // 刷新页面以重新加载
+  window.location.reload();
+}
+
 export { STORAGE_KEYS };
