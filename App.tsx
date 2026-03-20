@@ -405,16 +405,6 @@ const App: React.FC = () => {
                     {session.type === 'admin' && (
                       <>
                         <button 
-                          onClick={() => handleNavigate('dashboard')}
-                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white/10 group ${currentView === 'dashboard' ? 'bg-[#FF6B00]/20' : ''}`}
-                        >
-                          <Layout size={18} className="opacity-40 group-hover:opacity-100" />
-                          <div className="flex flex-col">
-                            <span className="text-[11px] font-black uppercase tracking-widest">관리자 대시보드</span>
-                            <span className="text-[8px] font-bold opacity-40 uppercase">인벤토리 및 주문 관리</span>
-                          </div>
-                        </button>
-                        <button 
                           onClick={() => handleNavigate('homepage_mgmt')}
                           className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white/10 group ${currentView === 'homepage_mgmt' ? 'bg-[#FF6B00]/20' : ''}`}
                         >
@@ -422,6 +412,16 @@ const App: React.FC = () => {
                           <div className="flex flex-col">
                             <span className="text-[11px] font-black uppercase tracking-widest">홈페이지 관리</span>
                             <span className="text-[8px] font-bold opacity-40 uppercase">콘텐츠 및 브랜드 제어</span>
+                          </div>
+                        </button>
+                        <button 
+                          onClick={() => handleNavigate('dashboard')}
+                          className={`w-full text-left px-6 py-4 flex items-center gap-4 transition-all hover:bg-white/10 group ${currentView === 'dashboard' ? 'bg-[#FF6B00]/20' : ''}`}
+                        >
+                          <Layout size={18} className="opacity-40 group-hover:opacity-100" />
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-black uppercase tracking-widest">관리자 대시보드</span>
+                            <span className="text-[8px] font-bold opacity-40 uppercase">인벤토리 및 주문 관리</span>
                           </div>
                         </button>
                         <button 
