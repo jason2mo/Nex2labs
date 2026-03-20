@@ -112,11 +112,8 @@ const App: React.FC = () => {
       try {
         const parsedSession = JSON.parse(sess);
         setSession(parsedSession);
-        if (parsedSession.type === 'admin') {
-          setCurrentView('dashboard');
-        } else {
-          setCurrentView('collection');
-        }
+        // 重新打开网页时进入主界面，不直接进入管理后台或收藏
+        setCurrentView('home');
       } catch (e) {
         localStorage.removeItem('nexto_labs_v6_session');
       }
