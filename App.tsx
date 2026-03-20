@@ -12,7 +12,8 @@ import HomepageManagementView from './components/HomepageManagementView';
 import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
-import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, setupAutoClearOnClose, getStoredToken, saveAdminsToRepo } from './services/dataService';
+import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, setupAutoClearOnClose, getStoredToken, saveAdminsToRepo, clearAllData } from './services/dataService';
+import { STORAGE_KEYS } from './constants';
 
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
 
@@ -41,10 +42,132 @@ const App: React.FC = () => {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [adminsSyncError, setAdminsSyncError] = useState<string | null>(null);
 
+  // 下拉刷新状态
+  const [pullState, setPullState] = useState<'idle' | 'pulling' | 'triggered' | 'refreshing'>('idle');
+  const pullStartY = useRef<number>(0);
+  const pullDeltaY = useRef<number>(0);
+  const pullIndicatorRef = useRef<HTMLDivElement>(null);
+
   // 关闭网页时自动清除缓存
   useEffect(() => {
     setupAutoClearOnClose();
   }, []);
+
+  // 下拉刷新：清空缓存并从 GitHub 获取最新数据
+  useEffect(() => {
+    const TRIGGER_THRESHOLD = 90;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        pullStartY.current = e.touches[0].clientY;
+        pullDeltaY.current = 0;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (pullStartY.current === 0) return;
+      const delta = e.touches[0].clientY - pullStartY.current;
+      if (delta > 0) {
+        pullDeltaY.current = delta;
+        const progress = Math.min(delta / TRIGGER_THRESHOLD, 1);
+        setPullState(progress >= 1 ? 'triggered' : 'pulling');
+        if (pullIndicatorRef.current) {
+          pullIndicatorRef.current.style.transform = `translateY(${Math.min(delta * 0.5, TRIGGER_THRESHOLD * 0.5)}px)`;
+          pullIndicatorRef.current.style.opacity = String(progress);
+        }
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = async () => {
+      if (pullState === 'idle') return;
+      const delta = pullDeltaY.current;
+
+      // 还原指示器位置
+      if (pullIndicatorRef.current) {
+        pullIndicatorRef.current.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        pullIndicatorRef.current.style.transform = 'translateY(0)';
+        pullIndicatorRef.current.style.opacity = '0';
+      }
+
+      if (delta >= TRIGGER_THRESHOLD) {
+        setPullState('refreshing');
+        // 清空所有缓存
+        clearAllData();
+        // 重新加载默认数据并触发 GitHub 拉取
+        setHomeData(DEFAULT_HOME_DATA);
+        setScopePosts([]);
+        setScopeCategories(DEFAULT_SCOPE_CATEGORIES);
+        try {
+          const data = await fetchPublicData();
+          if (data?.homeData) setHomeData(data.homeData);
+          if (data?.scopePosts) setScopePosts(data.scopePosts);
+          if (data?.scopeCategories) setScopeCategories(data.scopeCategories);
+        } catch {}
+      }
+
+      pullStartY.current = 0;
+      pullDeltaY.current = 0;
+      setTimeout(() => {
+        if (pullIndicatorRef.current) {
+          pullIndicatorRef.current.style.transition = '';
+        }
+        setPullState('idle');
+      }, 400);
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      if (window.scrollY === 0) {
+        pullStartY.current = e.clientY;
+        pullDeltaY.current = 0;
+      }
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (pullStartY.current === 0 || window.scrollY > 0) return;
+      const delta = e.clientY - pullStartY.current;
+      if (delta > 0) {
+        pullDeltaY.current = delta;
+        const progress = Math.min(delta / TRIGGER_THRESHOLD, 1);
+        setPullState(progress >= 1 ? 'triggered' : 'pulling');
+        if (pullIndicatorRef.current) {
+          pullIndicatorRef.current.style.transform = `translateY(${Math.min(delta * 0.5, TRIGGER_THRESHOLD * 0.5)}px)`;
+          pullIndicatorRef.current.style.opacity = String(progress);
+        }
+        e.preventDefault();
+      }
+    };
+
+    const onMouseUp = () => {
+      if (pullState === 'idle') return;
+      onTouchEnd();
+    };
+
+    const onScroll = () => {
+      if (window.scrollY > 0) {
+        pullStartY.current = 0;
+        if (pullState !== 'idle' && pullState !== 'refreshing') setPullState('idle');
+      }
+    };
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove, { passive: false });
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [pullState]);
 
   useEffect(() => {
     if (!isAppReady) return;
@@ -316,6 +439,24 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black flex flex-col font-sans selection:bg-[#FF6B00] selection:text-white text-white">
+      {/* 下拉刷新指示器 */}
+      <div
+        ref={pullIndicatorRef}
+        className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center pointer-events-none"
+        style={{ transform: 'translateY(0)', opacity: 0, transition: 'transform 0.3s ease, opacity 0.3s ease' }}
+      >
+        <div className="flex flex-col items-center gap-1 pt-4">
+          {pullState === 'triggered' || pullState === 'refreshing' ? (
+            <RefreshCw size={20} className="text-[#FF6B00] animate-spin" />
+          ) : (
+            <div className="w-5 h-5 border-2 border-[#FF6B00]/60 border-t-[#FF6B00] rounded-full animate-spin" style={{ animationDuration: '1.2s' }} />
+          )}
+          <span className="text-[9px] font-black text-[#FF6B00]/80 uppercase tracking-widest">
+            {pullState === 'triggered' ? ' RELEASE TO REFRESH' : pullState === 'refreshing' ? 'REFRESHING...' : 'PULL DOWN'}
+          </span>
+        </div>
+      </div>
+
       {!isAppReady && <LoadingOverlay brandName={homeData.brandName} logoImage={homeData.logoImage} loadingLogo={homeData.loadingLogo} loadingSubtext={homeData.loadingSubtext} />}
       
       <nav className="bg-black border-b border-white/20 sticky top-0 z-50 px-4 md:px-10 h-20 md:h-24 flex justify-between items-center">
