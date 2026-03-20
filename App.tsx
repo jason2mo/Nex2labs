@@ -413,7 +413,7 @@ const App: React.FC = () => {
       case 'home': return <HomeView {...commonProps} />;
       case 'scope_detail': return <ScopeDetailView categories={scopeCategories} categoryId={selectedCategory} posts={scopePosts} onBack={() => handleNavigate('home')} />;
       case 'team': return <TeamView data={homeData} onBack={() => handleNavigate('home')} />;
-      case 'login': return <Gateway brandName={homeData.brandName} logo={homeData.logoImage || '/logo.png'} logoBackgroundColor={homeData.logoBackgroundColor ?? 'transparent'} customers={customers} admins={admins} onLogin={handleLogin} />;
+      case 'login': return <Gateway brandName={homeData.brandName} logo={homeData.logoImage} logoBackgroundColor={homeData.logoBackgroundColor ?? 'transparent'} customers={customers} admins={admins} onLogin={handleLogin} />;
       case 'dashboard': 
         return session?.type === 'admin' ? (
           <AdminView 
@@ -510,10 +510,26 @@ const App: React.FC = () => {
             onClick={() => handleNavigate('home')} 
             className="px-2 py-2 flex items-center shrink-0 overflow-hidden"
           >
-             {(homeData.logoBackgroundColor ?? 'transparent') !== 'transparent' ? (
-              <div className="px-2 py-1 inline-block max-h-[34px] flex items-center" style={{ backgroundColor: homeData.logoBackgroundColor }}>
+             {homeData.logoImage ? (
+              (homeData.logoBackgroundColor ?? 'transparent') !== 'transparent' ? (
+                <div className="px-2 py-1 inline-block max-h-[34px] flex items-center" style={{ backgroundColor: homeData.logoBackgroundColor }}>
+                  <img 
+                    src={homeData.logoImage} 
+                    className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left shrink-0" 
+                    style={{ maxHeight: 34, maxWidth: 159 }} 
+                    alt={homeData.brandName}
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      const url = img.src;
+                      if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
+                        img.src = `${url}?t=${Date.now()}`;
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
                 <img 
-                  src={homeData.logoImage || '/logo.png'} 
+                  src={homeData.logoImage} 
                   className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left shrink-0" 
                   style={{ maxHeight: 34, maxWidth: 159 }} 
                   alt={homeData.brandName}
@@ -525,21 +541,11 @@ const App: React.FC = () => {
                     }
                   }}
                 />
-              </div>
+              )
             ) : (
-              <img 
-                src={homeData.logoImage || '/logo.png'} 
-                className="h-[26px] md:h-[34px] max-w-[125px] md:max-w-[159px] w-auto object-contain object-left shrink-0" 
-                style={{ maxHeight: 34, maxWidth: 159 }} 
-                alt={homeData.brandName}
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  const url = img.src;
-                  if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
-                    img.src = `${url}?t=${Date.now()}`;
-                  }
-                }}
-              />
+              <div className="bg-black px-4 py-2">
+                <h1 className="editorial-title text-xl md:text-2xl text-[#FAF9F6] uppercase">{homeData.brandName}</h1>
+              </div>
             )}
           </button>
           
