@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, ShieldCheck } from 'lucide-react';
+import { Trash2, ShieldCheck, AlertCircle, Check } from 'lucide-react';
 import { Admin } from '../types';
 import { STORAGE_KEYS } from '../constants';
 
@@ -9,14 +9,17 @@ interface AdminViewProps {
   onDeleteItem: (type: 'admins', id: string) => void;
   /** 有 GitHub Token 时同步到仓库，手机端才能看到列表 */
   onAdminsPersist?: (list: Admin[]) => void | Promise<void>;
+  syncError?: string | null;
+  onClearSyncError?: () => void;
 }
 
 const AdminView: React.FC<AdminViewProps> = ({ 
-  admins, setAdmins, onDeleteItem, onAdminsPersist
+  admins, setAdmins, onDeleteItem, onAdminsPersist, syncError, onClearSyncError
 }) => {
+  const [isSyncing, setIsSyncing] = useState(false);
   const [af, setAf] = useState({ name: '', code: '' });
 
-  const handleRegisterAdmin = (e: React.FormEvent) => {
+  const handleRegisterAdmin: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     if (admins.some(a => a.code === af.code.toUpperCase())) return alert('이미 존재하는 관리자 코드입니다.');
     const newId = `a_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -24,8 +27,13 @@ const AdminView: React.FC<AdminViewProps> = ({
     const next = [newAdmin, ...admins];
     setAdmins(next);
     localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(next));
-    void onAdminsPersist?.(next);
     setAf({ name: '', code: '' });
+    setIsSyncing(true);
+    try {
+      if (onAdminsPersist) await onAdminsPersist(next);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   return (
@@ -55,15 +63,28 @@ const AdminView: React.FC<AdminViewProps> = ({
             />
             <button 
               type="submit" 
-              className="w-full bg-black text-[#FAF9F6] mt-4 md:mt-6 py-3 md:py-4 font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-neutral-800 active:scale-95 transition-all"
+              disabled={isSyncing}
+              className="w-full bg-black text-[#FAF9F6] mt-4 md:mt-6 py-3 md:py-4 font-black text-[10px] md:text-[11px] uppercase tracking-widest hover:bg-neutral-800 active:scale-95 transition-all disabled:opacity-50"
             >
-              권한 부여
+              {isSyncing ? '동기화 중...' : '권한 부여'}
             </button>
             <p className="text-[9px] text-black/45 leading-relaxed mt-4">
               다른 기기(모바일)에서도 목록을 보려면 <strong className="text-black/70">홈페이지 관리</strong>에서 GitHub Token을 설정한 뒤, 관리자를 추가·삭제하면 자동으로 동기화됩니다.
             </p>
           </form>
-        </div>
+
+          {syncError && (
+            <div className="flex items-start gap-2 p-3 border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold mt-4">
+              <AlertCircle size={12} className="mt-0.5 shrink-0" />
+              <span>{syncError}</span>
+            </div>
+          )}
+          {!syncError && isSyncing && (
+            <div className="flex items-center gap-2 p-3 text-[10px] font-bold mt-4 text-black/50">
+              <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              GitHub에 동기화 중...
+            </div>
+          )}
 
         {/* Right: Admin List */}
         <div className="bg-[#FAF9F6] border-2 border-white/20 min-h-[300px] overflow-hidden text-black">

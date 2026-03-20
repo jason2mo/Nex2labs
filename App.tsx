@@ -39,6 +39,7 @@ const App: React.FC = () => {
   // GitHub 자동 동기화
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [adminsSyncError, setAdminsSyncError] = useState<string | null>(null);
 
   // 关闭网页时自动清除缓存
   useEffect(() => {
@@ -164,13 +165,20 @@ const App: React.FC = () => {
     }
   }, [admins, isAppReady]);
 
-  const persistAdminsToGithub = useCallback(async (list: Admin[]) => {
+  // 管理员列表变更时同步到 GitHub
+  const handleAdminsChange = useCallback((list: Admin[]) => {
     const token = getStoredToken();
-    if (!token) return;
-    await saveAdminsToRepo(list, token);
+    if (!token) {
+      setAdminsSyncError('GitHub Token이 설정되지 않았습니다. 관리자 설정에서 Token을 입력해주세요.');
+      return;
+    }
+    setAdminsSyncError(null);
+    saveAdminsToRepo(list, token).then(result => {
+      if (!result.success) setAdminsSyncError(`GitHub 동기화 실패: ${result.error || '알 수 없는 오류'}`);
+    });
   }, []);
-  
-  useEffect(() => { 
+
+  useEffect(() => {  
     if (isAppReady) {
       if (session) {
         localStorage.setItem('nexto_labs_v6_session', JSON.stringify(session));
@@ -190,8 +198,7 @@ const App: React.FC = () => {
       case 'customers': setCustomers(prev => prev.filter(c => String(c.id) !== String(id))); break;
       case 'admins': setAdmins(prev => {
         const next = prev.filter(a => String(a.id) !== String(id));
-        const token = getStoredToken();
-        if (token) saveAdminsToRepo(next, token).catch(() => {});
+        handleAdminsChange(next);
         return next;
       }); break;
     }
@@ -273,7 +280,9 @@ const App: React.FC = () => {
           <AdminView 
             admins={admins} setAdmins={setAdmins} 
             onDeleteItem={handleDeleteItem}
-            onAdminsPersist={persistAdminsToGithub}
+            onAdminsPersist={handleAdminsChange}
+            syncError={adminsSyncError}
+            onClearSyncError={() => setAdminsSyncError(null)}
           />
         ) : <HomeView {...commonProps} />;
       case 'homepage_mgmt':
