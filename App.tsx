@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const restoredSessionRef = useRef(false);
   
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -112,8 +113,7 @@ const App: React.FC = () => {
       try {
         const parsedSession = JSON.parse(sess);
         setSession(parsedSession);
-        // 重新打开网页时进入主界面，不直接进入管理后台或收藏
-        setCurrentView('home');
+        restoredSessionRef.current = true;
       } catch (e) {
         localStorage.removeItem('nexto_labs_v6_session');
       }
@@ -121,6 +121,14 @@ const App: React.FC = () => {
     
     setTimeout(() => setIsAppReady(true), 1200);
   }, []);
+
+  // 从本地恢复 session 后强制进入主界面（仅执行一次）
+  useEffect(() => {
+    if (session && restoredSessionRef.current) {
+      setCurrentView('home');
+      restoredSessionRef.current = false;
+    }
+  }, [session]);
 
   useEffect(() => { if (isAppReady) saveToLocalStorage({ homeData, scopePosts, scopeCategories }); }, [homeData, scopePosts, scopeCategories, isAppReady]);
   
@@ -169,7 +177,7 @@ const App: React.FC = () => {
   const handleLogin = (newSession: Session) => {
     setSession(newSession);
     localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(newSession));
-    handleNavigate(newSession.type === 'admin' ? 'dashboard' : 'collection');
+    handleNavigate('home');
   };
 
   const handleLogout = (e: React.MouseEvent) => {
