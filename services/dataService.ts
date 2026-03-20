@@ -393,11 +393,12 @@ export function clearAllData(): void {
 // 关闭网页时自动清除缓存
 export function setupAutoClearOnClose(): void {
   window.addEventListener('beforeunload', () => {
-    // 清除所有缓存数据
+    // 清除所有缓存数据，包括登录状态
     const keysToRemove = [
       STORAGE_KEYS.HOME_DATA,
       STORAGE_KEYS.SCOPE_POSTS,
       STORAGE_KEYS.SCOPE_CATEGORIES,
+      STORAGE_KEYS.SESSION,
     ];
     keysToRemove.forEach(key => localStorage.removeItem(key));
   });
