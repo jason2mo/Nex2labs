@@ -12,7 +12,7 @@ import HomepageManagementView from './components/HomepageManagementView';
 import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
-import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, clearOldData, setupAutoClearOnClose } from './services/dataService';
+import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, setupAutoClearOnClose } from './services/dataService';
 
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
 
@@ -98,8 +98,15 @@ const App: React.FC = () => {
     setScopePosts(savedData.scopePosts);
     setScopeCategories(savedData.scopeCategories);
 
-    // 清理旧数据
-    clearOldData();
+    // 清理旧数据（不清理 session）
+    const oldKeys = [
+      'nexto_labs_v6_products',
+      'nexto_labs_v6_orders',
+      'nexto_labs_v6_customers',
+      'nexto_labs_v6_admins',
+      'nexto_labs_v6_inquiries',
+    ];
+    oldKeys.forEach(key => localStorage.removeItem(key));
     
     if (sess) {
       try {

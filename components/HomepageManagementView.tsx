@@ -135,9 +135,6 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
 
     setIsSaving(false);
     setSaveSuccess(true);
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
   };
 
   const onDragStart = (e: React.DragEvent, index: number) => {
