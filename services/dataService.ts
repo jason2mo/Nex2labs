@@ -205,7 +205,7 @@ async function uploadImagesAndReplaceUrls(
     result.homeData.partnerLogos = newPartners;
   }
 
-  // testimonials[].avatar
+  // testimonials[].avatar — 用 testimonials index 命名（稳定，因为 testimonials 有稳定顺序）
   if (Array.isArray(home.testimonials) && result.homeData) {
     for (let i = 0; i < home.testimonials.length; i++) {
       if (isDataUrl(home.testimonials[i]?.avatar)) {
@@ -219,16 +219,20 @@ async function uploadImagesAndReplaceUrls(
     }
   }
 
-  // members[].image
+  // members[].image — 用 member.id 命名（避免删除后 index 错位）
   if (Array.isArray(home.members) && result.homeData) {
-    for (let i = 0; i < home.members.length; i++) {
-      if (isDataUrl(home.members[i]?.image)) {
-        const base64 = home.members[i].image!.split(',')[1];
-        const ext = getExtFromDataUrl(home.members[i].image!);
-        const fileName = `member-${i}.${ext}`;
+    for (const m of home.members) {
+      if (isDataUrl(m?.image)) {
+        const base64 = m.image!.split(',')[1];
+        const ext = getExtFromDataUrl(m.image!);
+        const safeId = m.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const fileName = `member-${safeId}.${ext}`;
         const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
         const ok = await uploadFileToRepo(path, base64, token);
-        if (ok) result.homeData.members[i].image = `${IMG_BASE}/${fileName}`;
+        if (ok) {
+          const mIdx = result.homeData.members.findIndex(x => x.id === m.id);
+          if (mIdx !== -1) result.homeData.members[mIdx].image = `${IMG_BASE}/${fileName}`;
+        }
       }
     }
   }
@@ -317,15 +321,13 @@ export async function saveAllData(
     scopeCategories: ScopeCategory[];
   },
   token: string
-): Promise<{ success: boolean; error?: string }> {
-  const errors: string[] = [];
-
+): Promise<{ success: boolean; error?: string; data?: { homeData: HomeData; scopePosts: ScopePost[]; scopeCategories: ScopeCategory[] } }> {
   // 先上传图片
   let dataToSave = data;
   try {
     dataToSave = await uploadImagesAndReplaceUrls(data, token);
   } catch (e) {
-    errors.push(`图片上传失败: ${(e as Error).message}`);
+    return { success: false, error: `图片上传失败: ${(e as Error).message}` };
   }
 
   // 按顺序保存三个文件，避免并行写入导致 409 冲突
@@ -341,7 +343,8 @@ export async function saveAllData(
     }
   }
 
-  return { success: true };
+  // 返回上传图片后的完整数据（含 GitHub CDN URL）
+  return { success: true, data: dataToSave };
 }
 
 /** 将管理员列表同步到 GitHub（需 Token） */

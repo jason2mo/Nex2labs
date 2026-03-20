@@ -111,25 +111,31 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
   });
 
   const handleManualSave = async () => {
-    // 1. 保存到 localStorage
-    saveToLocalStorage({ homeData, scopePosts, scopeCategories });
     setIsSaving(true);
     setSaveSuccess(false);
 
     const token = getStoredToken();
     if (token) {
-      setSyncStatus({ type: 'pushing', message: '로컬 저장 후 GitHub에 동기화 중...' });
+      setSyncStatus({ type: 'pushing', message: '이미지 업로드 + GitHub 동기화 중...' });
       try {
+        // saveAllData 上传图片后返回含 GitHub CDN URL 的完整数据
         const result = await saveAllData({ homeData, scopePosts, scopeCategories }, token);
-        if (result.success) {
+        if (result.success && result.data) {
+          // 用上传后的数据（含 GitHub URL）同步 localStorage，刷新页面也正常
+          saveToLocalStorage(result.data);
+          // 用 GitHub URL 版本更新组件状态，UI 立即显示正确地址
+          setHomeData(result.data.homeData);
           setSyncStatus({ type: 'idle', message: '로컬 + GitHub 저장 완료! 다른 기기에서도 곧 반영됩니다.', result: 'success' });
         } else {
+          saveToLocalStorage({ homeData, scopePosts, scopeCategories });
           setSyncStatus({ type: 'idle', message: result.error || 'GitHub 저장 실패', result: 'error' });
         }
       } catch (err) {
+        saveToLocalStorage({ homeData, scopePosts, scopeCategories });
         setSyncStatus({ type: 'idle', message: `GitHub 동기화 오류: ${(err as Error).message}`, result: 'error' });
       }
     } else {
+      saveToLocalStorage({ homeData, scopePosts, scopeCategories });
       setSyncStatus({ type: 'idle', message: '로컬만 저장됨. 사이트/다른 기기는 예전 내용이 보입니다. GitHub Token을 설정한 뒤 다시 저장하세요.', result: 'error' });
     }
 
@@ -512,18 +518,14 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                         )}
                         <label className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
                           <Upload size={16} className="text-white" />
-                          <input type="file" className="hidden" onChange={e => handleImgUpload(img => {
-                            const list = [...homeData.testimonials];
-                            list[i].avatar = img;
-                            updateHomeData({ testimonials: list });
+                          <input type="file" className="hidden" accept="image/*" onChange={e => handleImgUpload(img => {
+                            updateHomeData({ testimonials: homeData.testimonials.map((t, idx) => idx === i ? { ...t, avatar: img } : t) });
                           }, e)} />
                         </label>
                       </div>
                       {t.avatar && (
                         <button onClick={() => {
-                          const list = [...homeData.testimonials];
-                          list[i].avatar = null;
-                          updateHomeData({ testimonials: list });
+                          updateHomeData({ testimonials: homeData.testimonials.map((t, idx) => idx === i ? { ...t, avatar: null } : t) });
                         }} className="text-[8px] font-black text-red-400 uppercase block">삭제</button>
                       )}
                     </div>
@@ -985,7 +987,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                       <textarea value={m.bio} onChange={e => updateMember(m.id, { bio: e.target.value })} className="w-full bg-transparent border-b border-white/20 text-[10px] h-16 resize-none text-white" placeholder="소개글" />
                       <div>
                         <label className="text-[9px] font-black text-white/50 block mb-1">멤버 이미지</label>
-                        <input type="file" className="text-[9px] text-white/80" onChange={e => handleImgUpload(img => updateMember(m.id, { image: img }), e)} />
+                        <input type="file" className="text-[9px] text-white/80" accept="image/*" onChange={e => handleImgUpload(img => updateMember(m.id, { image: img }), e)} />
                       </div>
                     </div>
                   ))}
