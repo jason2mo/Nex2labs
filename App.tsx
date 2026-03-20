@@ -12,7 +12,7 @@ import HomepageManagementView from './components/HomepageManagementView';
 import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
-import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, setupAutoClearOnClose } from './services/dataService';
+import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, setupAutoClearOnClose, getStoredToken, saveAdminsToRepo } from './services/dataService';
 
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
 
@@ -66,6 +66,14 @@ const App: React.FC = () => {
           setScopeCategories(data.scopeCategories);
           saveToLocalStorage({ homeData, scopePosts, scopeCategories: data.scopeCategories });
         }
+        if (data?.admins !== undefined) {
+          setAdmins(prev => {
+            const remote = data.admins as Admin[];
+            if (remote.length > 0) return remote;
+            if (prev.length > 0) return prev;
+            return remote;
+          });
+        }
       } catch (err) {
         console.warn('同步失败，使用本地数据:', err);
       } finally {
@@ -99,12 +107,20 @@ const App: React.FC = () => {
     setScopePosts(savedData.scopePosts);
     setScopeCategories(savedData.scopeCategories);
 
-    // 清理旧数据（不清理 session）
+    const adminsRaw = localStorage.getItem(STORAGE_KEYS.ADMINS);
+    if (adminsRaw) {
+      try {
+        setAdmins(JSON.parse(adminsRaw) as Admin[]);
+      } catch {
+        localStorage.removeItem(STORAGE_KEYS.ADMINS);
+      }
+    }
+
+    // 清理旧数据（不清理 session、admins）
     const oldKeys = [
       'nexto_labs_v6_products',
       'nexto_labs_v6_orders',
       'nexto_labs_v6_customers',
-      'nexto_labs_v6_admins',
       'nexto_labs_v6_inquiries',
     ];
     oldKeys.forEach(key => localStorage.removeItem(key));
@@ -141,6 +157,18 @@ const App: React.FC = () => {
   }, [session]);
 
   useEffect(() => { if (isAppReady) saveToLocalStorage({ homeData, scopePosts, scopeCategories }); }, [homeData, scopePosts, scopeCategories, isAppReady]);
+
+  useEffect(() => {
+    if (isAppReady) {
+      localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(admins));
+    }
+  }, [admins, isAppReady]);
+
+  const persistAdminsToGithub = useCallback(async (list: Admin[]) => {
+    const token = getStoredToken();
+    if (!token) return;
+    await saveAdminsToRepo(list, token);
+  }, []);
   
   useEffect(() => { 
     if (isAppReady) {
@@ -160,7 +188,12 @@ const App: React.FC = () => {
       case 'products': setProducts(prev => prev.filter(p => String(p.id) !== String(id))); break;
       case 'orders': setOrders(prev => prev.filter(o => String(o.id) !== String(id))); break;
       case 'customers': setCustomers(prev => prev.filter(c => String(c.id) !== String(id))); break;
-      case 'admins': setAdmins(prev => prev.filter(a => String(a.id) !== String(id))); break;
+      case 'admins': setAdmins(prev => {
+        const next = prev.filter(a => String(a.id) !== String(id));
+        const token = getStoredToken();
+        if (token) saveAdminsToRepo(next, token).catch(() => {});
+        return next;
+      }); break;
     }
   }, []);
 
@@ -240,6 +273,7 @@ const App: React.FC = () => {
           <AdminView 
             admins={admins} setAdmins={setAdmins} 
             onDeleteItem={handleDeleteItem}
+            onAdminsPersist={persistAdminsToGithub}
           />
         ) : <HomeView {...commonProps} />;
       case 'homepage_mgmt':

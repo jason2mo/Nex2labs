@@ -1,7 +1,7 @@
 // 数据存储服务 - 统一管理所有数据
 // 数据存储在 data/ 文件夹中
 
-import { HomeData, ScopePost, ScopeCategory } from '../types';
+import { HomeData, ScopePost, ScopeCategory, Admin } from '../types';
 import { DEFAULT_HOME_DATA, DEFAULT_SCOPE_CATEGORIES } from '../constants';
 
 // GitHub 配置
@@ -13,6 +13,7 @@ export const GITHUB_CONFIG = {
   homeFile: 'home.json',
   postsFile: 'posts.json',
   categoriesFile: 'categories.json',
+  adminsFile: 'admins.json',
   imagePath: 'images',
 };
 
@@ -61,18 +62,21 @@ export async function fetchPublicData(): Promise<{
   homeData?: HomeData;
   scopePosts?: ScopePost[];
   scopeCategories?: ScopeCategory[];
+  admins?: Admin[];
 } | null> {
   try {
-    const [homeRes, postsRes, categoriesRes] = await Promise.all([
+    const [homeRes, postsRes, categoriesRes, adminsRes] = await Promise.all([
       fetch(`${DATA_BASE}/${GITHUB_CONFIG.homeFile}`),
       fetch(`${DATA_BASE}/${GITHUB_CONFIG.postsFile}`),
       fetch(`${DATA_BASE}/${GITHUB_CONFIG.categoriesFile}`),
+      fetch(`${DATA_BASE}/${GITHUB_CONFIG.adminsFile}`),
     ]);
 
     const result: {
       homeData?: HomeData;
       scopePosts?: ScopePost[];
       scopeCategories?: ScopeCategory[];
+      admins?: Admin[];
     } = {};
 
     if (homeRes.ok) {
@@ -83,6 +87,10 @@ export async function fetchPublicData(): Promise<{
     }
     if (categoriesRes.ok) {
       result.scopeCategories = await categoriesRes.json();
+    }
+    if (adminsRes.ok) {
+      const raw = await adminsRes.json();
+      result.admins = Array.isArray(raw) ? raw as Admin[] : [];
     }
 
     return result;
@@ -334,6 +342,12 @@ export async function saveAllData(
   }
 
   return { success: true };
+}
+
+/** 将管理员列表同步到 GitHub（需 Token） */
+export async function saveAdminsToRepo(admins: Admin[], token: string): Promise<{ success: boolean; error?: string }> {
+  const path = `${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.adminsFile}`;
+  return saveFileToRepo(path, JSON.stringify(admins, null, 2), token);
 }
 
 // 保存到 localStorage

@@ -7,10 +7,12 @@ interface AdminViewProps {
   admins: Admin[];
   setAdmins: React.Dispatch<React.SetStateAction<Admin[]>>;
   onDeleteItem: (type: 'admins', id: string) => void;
+  /** 有 GitHub Token 时同步到仓库，手机端才能看到列表 */
+  onAdminsPersist?: (list: Admin[]) => void | Promise<void>;
 }
 
 const AdminView: React.FC<AdminViewProps> = ({ 
-  admins, setAdmins, onDeleteItem
+  admins, setAdmins, onDeleteItem, onAdminsPersist
 }) => {
   const [af, setAf] = useState({ name: '', code: '' });
 
@@ -19,9 +21,10 @@ const AdminView: React.FC<AdminViewProps> = ({
     if (admins.some(a => a.code === af.code.toUpperCase())) return alert('이미 존재하는 관리자 코드입니다.');
     const newId = `a_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newAdmin = { ...af, id: newId, code: af.code.toUpperCase(), createdAt: new Date().toISOString() };
-    setAdmins([newAdmin, ...admins]);
-    // 即时保存到 localStorage，防止 isAppReady 还未 true 时数据丢失
-    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify([newAdmin, ...admins]));
+    const next = [newAdmin, ...admins];
+    setAdmins(next);
+    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(next));
+    void onAdminsPersist?.(next);
     setAf({ name: '', code: '' });
   };
 
@@ -56,6 +59,9 @@ const AdminView: React.FC<AdminViewProps> = ({
             >
               권한 부여
             </button>
+            <p className="text-[9px] text-black/45 leading-relaxed mt-4">
+              다른 기기(모바일)에서도 목록을 보려면 <strong className="text-black/70">홈페이지 관리</strong>에서 GitHub Token을 설정한 뒤, 관리자를 추가·삭제하면 자동으로 동기화됩니다.
+            </p>
           </form>
         </div>
 
