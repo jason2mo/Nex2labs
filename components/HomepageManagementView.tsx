@@ -395,13 +395,13 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
           <div className="space-y-6">
             <div className="flex justify-between items-center"><label className="text-[10px] font-black text-white/50 uppercase">파트너 로고 리스트</label>
             <label className="bg-[#FAF9F6] text-black px-3 py-1 text-[10px] font-black cursor-pointer uppercase">Upload<input type="file" className="hidden" onChange={e => {
-              const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => updateHomeData({ partnerLogos: [...homeData.partnerLogos, ev.target?.result as string] }); r.readAsDataURL(file);
+              const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => updateHomeData(prev => ({ ...prev, partnerLogos: [...prev.partnerLogos, ev.target?.result as string] })); r.readAsDataURL(file);
             }} /></label></div>
             <div className="grid grid-cols-3 gap-3">
               {homeData.partnerLogos.map((l, i) => (
                 <div key={i} className="relative group border border-white/20 p-2 bg-white/5 aspect-square flex items-center justify-center">
                   <img src={l} className="max-h-full max-w-full grayscale" alt={`Partner ${i}`} />
-                  <button onClick={() => updateHomeData({ partnerLogos: homeData.partnerLogos.filter((_, idx) => idx !== i) })} className="absolute -top-2 -right-2 bg-red-600 p-1 rounded-full text-white"><X size={10}/></button>
+                  <button onClick={() => updateHomeData(prev => ({ ...prev, partnerLogos: prev.partnerLogos.filter((_, idx) => idx !== i) }))} className="absolute -top-2 -right-2 bg-red-600 p-1 rounded-full text-white"><X size={10}/></button>
                 </div>
               ))}
             </div>
@@ -505,13 +505,13 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             
             <div className="flex justify-between items-center pt-4">
               <label className="text-[10px] font-black text-white/50 uppercase">리뷰 리스트</label>
-              <button onClick={() => updateHomeData({ testimonials: [...homeData.testimonials, { name: '이름', role: '직함', text: '리뷰 내용', avatar: null }] })} className="bg-[#FAF9F6] text-black px-3 py-1 text-[10px] font-black">ADD</button>
+              <button onClick={() => updateHomeData(prev => ({ ...prev, testimonials: [...prev.testimonials, { name: '이름', role: '직함', text: '리뷰 내용', avatar: null }] }))} className="bg-[#FAF9F6] text-black px-3 py-1 text-[10px] font-black">ADD</button>
             </div>
             
             <div className="space-y-6">
               {homeData.testimonials.map((t, i) => (
                 <div key={i} className="p-6 border border-white/20 space-y-4 bg-white/5 relative group">
-                  <button onClick={() => updateHomeData({ testimonials: homeData.testimonials.filter((_, idx) => idx !== i) })} className="absolute top-2 right-2 text-red-400 opacity-60 group-hover:opacity-100"><Trash2 size={14}/></button>
+                  <button onClick={() => updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.filter((_, idx) => idx !== i) }))} className="absolute top-2 right-2 text-red-400 opacity-60 group-hover:opacity-100"><Trash2 size={14}/></button>
                   
                   <div className="flex gap-6 items-start">
                     <div className="space-y-2">
@@ -584,12 +584,12 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             <div><label className="text-[10px] font-black text-white/50">푸터 정보 텍스트</label><textarea value={homeData.footerInfo} onChange={e => updateHomeData({ footerInfo: e.target.value })} className="w-full bg-transparent border-b border-white/20 p-2 text-xs h-32 text-white placeholder:text-white/40" /></div>
             
             <div className="space-y-4">
-              <div className="flex justify-between items-center"><label className="text-[10px] font-black text-white/50 uppercase">Quick Links</label><button onClick={() => updateHomeData({ footerQuickLinks: [...homeData.footerQuickLinks, { label: '새 링크', target: 'home' }] })} className="bg-[#FAF9F6] text-black px-2 py-0.5 text-[8px] font-black">ADD</button></div>
+              <div className="flex justify-between items-center"><label className="text-[10px] font-black text-white/50 uppercase">Quick Links</label><button onClick={() => updateHomeData(prev => ({ ...prev, footerQuickLinks: [...prev.footerQuickLinks, { label: '새 링크', target: 'home' }] }))} className="bg-[#FAF9F6] text-black px-2 py-0.5 text-[8px] font-black">ADD</button></div>
               {homeData.footerQuickLinks.map((link, i) => (
                 <div key={i} className="space-y-2 bg-white/5 p-3 border border-white/20 group">
                   <div className="flex justify-between items-center">
                     <span className="text-[8px] text-white/50 font-black uppercase">Link {i+1}</span>
-                    <button onClick={() => updateHomeData({ footerQuickLinks: homeData.footerQuickLinks.filter((_, idx) => idx !== i) })} className="text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={12}/></button>
+                    <button onClick={() => updateHomeData(prev => ({ ...prev, footerQuickLinks: prev.footerQuickLinks.filter((_, idx) => idx !== i) }))} className="text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={12}/></button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
@@ -606,12 +606,12 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
             </div>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center"><label className="text-[10px] font-black text-white/50 uppercase">Explore Links</label><button onClick={() => updateHomeData({ footerExploreLinks: [...homeData.footerExploreLinks, { label: '새 탐색', target: 'scope' }] })} className="bg-[#FAF9F6] text-black px-2 py-0.5 text-[8px] font-black">ADD</button></div>
+              <div className="flex justify-between items-center"><label className="text-[10px] font-black text-white/50 uppercase">Explore Links</label><button onClick={() => updateHomeData(prev => ({ ...prev, footerExploreLinks: [...prev.footerExploreLinks, { label: '새 탐색', target: 'scope' }] }))} className="bg-[#FAF9F6] text-black px-2 py-0.5 text-[8px] font-black">ADD</button></div>
               {homeData.footerExploreLinks.map((link, i) => (
                 <div key={i} className="space-y-2 bg-white/5 p-3 border border-white/20 group">
                   <div className="flex justify-between items-center">
                     <span className="text-[8px] text-white/50 font-black uppercase">Link {i+1}</span>
-                    <button onClick={() => updateHomeData({ footerExploreLinks: homeData.footerExploreLinks.filter((_, idx) => idx !== i) })} className="text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={12}/></button>
+                    <button onClick={() => updateHomeData(prev => ({ ...prev, footerExploreLinks: prev.footerExploreLinks.filter((_, idx) => idx !== i) }))} className="text-red-400 opacity-60 group-hover:opacity-100 transition-all"><Trash2 size={12}/></button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">

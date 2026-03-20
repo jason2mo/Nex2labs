@@ -365,6 +365,14 @@ export async function saveAdminsToRepo(admins: Admin[], token: string): Promise<
   return saveFileToRepo(path, JSON.stringify(admins, null, 2), token);
 }
 
+/** 将首页数据同步到 GitHub（需 Token），自动上传图片 dataURL */
+export async function saveHomeDataToRepo(homeData: HomeData, token: string): Promise<{ success: boolean; error?: string }> {
+  // 先上传所有 dataURL 图片，获取 CDN URL
+  const dataToSave = await convertDataUrlsToGitHubUrls({ homeData, scopePosts: [], scopeCategories: [] }, token);
+  const path = `${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.homeFile}`;
+  return saveFileToRepo(path, JSON.stringify(dataToSave.homeData, null, 2), token);
+}
+
 // 保存到 localStorage
 export function saveToLocalStorage(data: {
   homeData: HomeData;
