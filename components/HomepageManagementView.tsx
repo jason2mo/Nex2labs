@@ -169,7 +169,13 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     reader.readAsDataURL(file);
   };
 
-  const updateHomeData = (updates: Partial<HomeData>) => setHomeData(prev => ({ ...prev, ...updates }));
+  const updateHomeData = (updates: Partial<HomeData> | ((prev: HomeData) => HomeData)) => {
+    if (typeof updates === 'function') {
+      setHomeData(updates);
+    } else {
+      setHomeData(prev => ({ ...prev, ...updates }));
+    }
+  };
 
   const handleSavePost = () => {
     const categoryId = newPost.category || (scopeCategories.length > 0 ? scopeCategories[0].id : '');
@@ -536,7 +542,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                     </div>
                   </div>
                   
-                  <textarea value={t.text} onChange={e => { const list = [...homeData.testimonials]; list[i].text = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/20 text-[10px] h-20 outline-none text-white placeholder:text-white/40" placeholder="리뷰 내용" />
+                  <textarea value={t.text} onChange={e => { updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === i ? { ...t, text: e.target.value } : t) })); }} className="w-full bg-transparent border-b border-white/20 text-[10px] h-20 outline-none text-white placeholder:text-white/40" placeholder="리뷰 내용" />
                 </div>
               ))}
             </div>
