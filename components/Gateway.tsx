@@ -57,10 +57,32 @@ const Gateway: React.FC<GatewayProps> = ({ brandName, logo, logoBackgroundColor 
             {logo ? (
               logoBackgroundColor && logoBackgroundColor !== 'transparent' ? (
                 <div className="px-4 py-2 inline-block" style={{ backgroundColor: logoBackgroundColor }}>
-                  <img src={logo} className="max-h-[87px] mx-auto object-contain" alt={brandName} />
+                  <img 
+                    src={logo} 
+                    className="max-h-[87px] mx-auto object-contain" 
+                    alt={brandName}
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      const url = img.src;
+                      if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
+                        img.src = `${url}?t=${Date.now()}`;
+                      }
+                    }}
+                  />
                 </div>
               ) : (
-                <img src={logo} className="max-h-[87px] mx-auto object-contain" alt={brandName} />
+                <img 
+                  src={logo} 
+                  className="max-h-[87px] mx-auto object-contain" 
+                  alt={brandName}
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    const url = img.src;
+                    if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
+                      img.src = `${url}?t=${Date.now()}`;
+                    }
+                  }}
+                />
               )
             ) : (
               <div className="bg-black px-10 py-5 brutal-border shadow-[10px_10px_0_0_black]">

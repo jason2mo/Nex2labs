@@ -18,7 +18,19 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
     <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-white">
       <div className="mb-8 flex justify-center">
         {displayLogo ? (
-          <img src={displayLogo} alt={brandName} className="max-h-16 md:max-h-20 w-auto object-contain" />
+          <img 
+            src={displayLogo} 
+            alt={brandName} 
+            className="max-h-16 md:max-h-20 w-auto object-contain"
+            onError={(e) => {
+              const img = e.currentTarget;
+              const url = img.src;
+              // 如果是 GitHub URL，尝试添加时间戳强制刷新
+              if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
+                img.src = `${url}?t=${Date.now()}`;
+              }
+            }}
+          />
         ) : (
           <h1 className="big-title text-4xl md:text-5xl italic">{brandName}.</h1>
         )}

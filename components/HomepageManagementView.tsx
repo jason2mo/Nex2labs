@@ -229,7 +229,21 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
               </div>
               <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-10 text-center cursor-pointer hover:bg-white/10 transition-all group overflow-hidden relative text-white">
                 {homeData.logoImage ? (
-                  <img src={homeData.logoImage} className="max-h-20 mx-auto object-contain" alt="Logo" />
+                  <img 
+                    src={homeData.logoImage} 
+                    className="max-h-20 mx-auto object-contain" 
+                    alt="Logo"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      const url = img.src;
+                      // 如果是 GitHub URL，尝试添加时间戳强制刷新
+                      if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
+                        img.src = `${url}?t=${Date.now()}`;
+                      } else {
+                        console.error('图片加载失败:', url);
+                      }
+                    }}
+                  />
                 ) : (
                   <div className="space-y-2">
                     <ImageIcon className="mx-auto opacity-30" size={32}/>
@@ -278,7 +292,21 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                 </div>
                 <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-6 text-center cursor-pointer hover:bg-white/10 transition-all group overflow-hidden relative text-white">
                   {homeData.loadingLogo ? (
-                    <img src={homeData.loadingLogo} className="max-h-12 mx-auto object-contain" alt="Loading Logo" />
+                    <img 
+                      src={homeData.loadingLogo} 
+                      className="max-h-12 mx-auto object-contain" 
+                      alt="Loading Logo"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        const url = img.src;
+                        // 如果是 GitHub URL，尝试添加时间戳强制刷新
+                        if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
+                          img.src = `${url}?t=${Date.now()}`;
+                        } else {
+                          console.error('图片加载失败:', url);
+                        }
+                      }}
+                    />
                   ) : (
                     <div className="space-y-2">
                       <ImageIcon className="mx-auto opacity-30" size={24}/>
@@ -649,7 +677,22 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       case 'brand':
         return (
           <div className="flex flex-col items-center justify-center min-h-[400px]">
-            {homeData.logoImage ? <img src={homeData.logoImage} className="max-h-24 object-contain" alt="Logo" /> : <div className="bg-black px-10 py-5 brutal-border"><h1 className="editorial-title text-5xl text-[#FAF9F6] uppercase">{homeData.brandName}</h1></div>}
+            {homeData.logoImage ? (
+              <img 
+                src={homeData.logoImage} 
+                className="max-h-24 object-contain" 
+                alt="Logo"
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  const url = img.src;
+                  if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
+                    img.src = `${url}?t=${Date.now()}`;
+                  }
+                }}
+              />
+            ) : (
+              <div className="bg-black px-10 py-5 brutal-border"><h1 className="editorial-title text-5xl text-[#FAF9F6] uppercase">{homeData.brandName}</h1></div>
+            )}
           </div>
         );
       case 'hero':
