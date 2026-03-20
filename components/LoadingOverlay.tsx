@@ -14,12 +14,21 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   loadingSubtext = "BOOTING INFRASTRUCTURE"
 }) => {
   const displayLogo = loadingLogo ?? logoImage;
+  // 为 GitHub URL 添加时间戳避免缓存
+  const getLogoUrl = (url: string | null) => {
+    if (!url) return null;
+    if (url.includes('raw.githubusercontent.com') && !url.includes('?')) {
+      return `${url}?t=${Date.now()}`;
+    }
+    return url;
+  };
+  
   return (
     <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center text-white">
       <div className="mb-8 flex justify-center">
         {displayLogo ? (
           <img 
-            src={displayLogo} 
+            src={getLogoUrl(displayLogo) || displayLogo} 
             alt={brandName} 
             className="max-h-16 md:max-h-20 w-auto object-contain"
             onError={(e) => {

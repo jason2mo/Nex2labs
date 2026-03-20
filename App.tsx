@@ -187,8 +187,17 @@ const App: React.FC = () => {
       try {
         const data = await fetchPublicData();
         if (data?.homeData) {
-          setHomeData(data.homeData);
-          saveToLocalStorage({ homeData: data.homeData, scopePosts, scopeCategories });
+          // 合并策略：GitHub 数据优先，但保留本地非 null 的图片字段（避免 GitHub null 覆盖本地已上传的图片）
+          setHomeData(prev => {
+            const merged = { ...data.homeData };
+            // 如果 GitHub 的图片字段是 null，保留本地的值
+            if (!merged.logoImage && prev.logoImage) merged.logoImage = prev.logoImage;
+            if (!merged.loadingLogo && prev.loadingLogo) merged.loadingLogo = prev.loadingLogo;
+            if (!merged.heroImage && prev.heroImage) merged.heroImage = prev.heroImage;
+            if (!merged.aboutImage && prev.aboutImage) merged.aboutImage = prev.aboutImage;
+            saveToLocalStorage({ homeData: merged, scopePosts, scopeCategories });
+            return merged;
+          });
         }
         if (data?.scopePosts) {
           setScopePosts(data.scopePosts);
@@ -233,7 +242,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const sess = localStorage.getItem('nexto_labs_v6_session');
     
-    // 从 localStorage 加载数据
+    // 从 localStorage 加载数据（先显示本地数据，避免空白）
     const savedData = loadFromLocalStorage();
     setHomeData(savedData.homeData);
     setScopePosts(savedData.scopePosts);
@@ -280,6 +289,35 @@ const App: React.FC = () => {
       });
     }
     localStorage.setItem('nexto_labs_v6_version', currentVersion);
+    
+    // 立即从 GitHub 获取最新数据（不等待 isAppReady，确保 LoadingOverlay 显示最新内容）
+    (async () => {
+      try {
+        const data = await fetchPublicData();
+        if (data?.homeData) {
+          // 合并策略：GitHub 数据优先，但保留本地非 null 的图片字段
+          setHomeData(prev => {
+            const merged = { ...data.homeData };
+            if (!merged.logoImage && prev.logoImage) merged.logoImage = prev.logoImage;
+            if (!merged.loadingLogo && prev.loadingLogo) merged.loadingLogo = prev.loadingLogo;
+            if (!merged.heroImage && prev.heroImage) merged.heroImage = prev.heroImage;
+            if (!merged.aboutImage && prev.aboutImage) merged.aboutImage = prev.aboutImage;
+            saveToLocalStorage({ homeData: merged, scopePosts: savedData.scopePosts, scopeCategories: savedData.scopeCategories });
+            return merged;
+          });
+        }
+        if (data?.scopePosts) {
+          setScopePosts(data.scopePosts);
+          saveToLocalStorage({ homeData: savedData.homeData, scopePosts: data.scopePosts, scopeCategories: savedData.scopeCategories });
+        }
+        if (data?.scopeCategories) {
+          setScopeCategories(data.scopeCategories);
+          saveToLocalStorage({ homeData: savedData.homeData, scopePosts: savedData.scopePosts, scopeCategories: data.scopeCategories });
+        }
+      } catch (err) {
+        console.warn('초기 GitHub 동기화 실패:', err);
+      }
+    })();
     
     setTimeout(() => setIsAppReady(true), 1200);
   }, []);
