@@ -115,36 +115,58 @@ function getFixedImgName(prefix: string, dataUrl: string, idx?: number): string 
   return idx !== undefined ? `${prefix}-${idx}.${ext}` : `${prefix}.${ext}`;
 }
 
-// 上传文件到 GitHub
-async function uploadFileToRepo(path: string, base64Content: string, token: string): Promise<boolean> {
-  try {
+// 上传文件到 GitHub（409 时自动获取最新 SHA 重试，最多 3 次）
+async function uploadFileToRepo(path: string, base64Content: string, token: string, maxRetries = 3): Promise<boolean> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    // 每次重试前都获取最新 SHA
     let sha: string | undefined;
-    const getRes = await fetch(`${API_BASE}/contents/${path}?ref=${GITHUB_CONFIG.branch}`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
-    });
-    if (getRes.ok) {
-      const info = await getRes.json();
-      sha = info.sha;
+    try {
+      const getRes = await fetch(`${API_BASE}/contents/${path}?ref=${GITHUB_CONFIG.branch}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+      });
+      if (getRes.ok) {
+        const info = await getRes.json();
+        sha = info.sha;
+      }
+    } catch {
+      // 文件不存在时 sha 为 undefined，这是正常的
     }
+
     const payload: Record<string, unknown> = {
       message: `Upload asset: ${path}`,
       content: base64Content,
       branch: GITHUB_CONFIG.branch,
     };
     if (sha) payload.sha = sha;
-    const res = await fetch(`${API_BASE}/contents/${path}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/vnd.github+json',
-      },
-      body: JSON.stringify(payload),
-    });
-    return res.ok;
-  } catch {
-    return false;
+
+    try {
+      const res = await fetch(`${API_BASE}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/vnd.github+json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) return true;
+
+      // 409 Conflict：文件在远程被修改，等待后重试（最多 3 次）
+      if (res.status === 409 && attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1))); // 递增延迟：200ms, 400ms, 600ms
+        continue; // 继续下一次循环，重新获取 SHA
+      }
+
+      // 非 409 错误，或重试次数用完
+      return false;
+    } catch {
+      if (attempt === maxRetries - 1) return false;
+      await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1)));
+    }
   }
+  
+  return false;
 }
 
 // 上传图片并替换 URL
