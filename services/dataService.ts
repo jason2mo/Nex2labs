@@ -326,19 +326,24 @@ async function getFileSha(path: string, token: string): Promise<string | undefin
     if (getRes.ok) {
       const info = await getRes.json();
       return info.sha;
+    } else if (getRes.status === 404) {
+      // 文件不存在（新文件），返回 undefined
+      return undefined;
+    } else {
+      console.warn(`获取 SHA 失败 (${getRes.status}): ${path}`);
     }
   } catch (e) {
-    console.warn('获取 SHA 失败:', e);
+    console.warn('获取 SHA 网络错误:', e);
   }
   return undefined;
 }
 
-// 保存数据到 GitHub（409 时自动获取最新 SHA 重试，最多 3 次）
-async function saveFileToRepo(path: string, content: string, token: string, maxRetries = 3): Promise<{ success: boolean; error?: string }> {
+// 保存数据到 GitHub（409 时自动获取最新 SHA 重试，最多 5 次）
+async function saveFileToRepo(path: string, content: string, token: string, maxRetries = 5): Promise<{ success: boolean; error?: string }> {
   const encodedContent = btoa(unescape(encodeURIComponent(content)));
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    // 每次重试前都获取最新 SHA
+    // 每次重试前都获取最新 SHA（包括第一次尝试）
     const sha = await getFileSha(path, token);
     
     const payload: Record<string, unknown> = {
@@ -359,13 +364,24 @@ async function saveFileToRepo(path: string, content: string, token: string, maxR
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) return { success: true };
+      if (res.ok) {
+        console.log(`保存成功: ${path}`);
+        return { success: true };
+      }
 
-      const resText = await res.text();
+      let errorMsg = '';
+      try {
+        const resJson = await res.json();
+        errorMsg = resJson.message || JSON.stringify(resJson);
+      } catch {
+        errorMsg = await res.text();
+      }
       
-      // 409 Conflict：文件在远程被修改，等待 200ms 后重试（最多 3 次）
+      // 409 Conflict：文件在远程被修改，等待后重试（最多 5 次）
       if (res.status === 409 && attempt < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1))); // 递增延迟：200ms, 400ms, 600ms
+        const delay = Math.min(500 * (attempt + 1), 2000); // 递增延迟：500ms, 1000ms, 1500ms, 2000ms, 2000ms
+        console.log(`文件冲突，等待 ${delay}ms 后重试 (${attempt + 1}/${maxRetries}): ${path}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
         continue; // 继续下一次循环，重新获取 SHA
       }
       
@@ -377,12 +393,15 @@ async function saveFileToRepo(path: string, content: string, token: string, maxR
         };
       }
       
-      return { success: false, error: resText };
+      console.error(`保存失败 (${res.status}): ${path}`, errorMsg);
+      return { success: false, error: errorMsg || `HTTP ${res.status}` };
     } catch (e) {
       if (attempt === maxRetries - 1) {
+        console.error('保存网络错误:', e);
         return { success: false, error: (e as Error).message };
       }
-      await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1)));
+      const delay = Math.min(500 * (attempt + 1), 2000);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
   
@@ -411,10 +430,15 @@ export async function saveAllData(
     [`${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.postsFile}`, JSON.stringify(dataToSave.scopePosts, null, 2)],
     [`${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.categoriesFile}`, JSON.stringify(dataToSave.scopeCategories, null, 2)],
   ];
-  for (const [filePath, content] of toSave) {
+  for (let i = 0; i < toSave.length; i++) {
+    const [filePath, content] = toSave[i];
     const result = await saveFileToRepo(filePath, content, token);
     if (!result.success) {
       return { success: false, error: result.error };
+    }
+    // 在保存文件之间添加短暂延迟，确保 GitHub API 有时间处理
+    if (i < toSave.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
   }
 
