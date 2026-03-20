@@ -3,7 +3,7 @@ import { Settings, BookOpen, Trash2, Image as ImageIcon, PlusCircle, Monitor, In
 import { HomeData, ScopePost, ScopeCategory, TestimonialItem, FooterLink, MemberItem } from '../types';
 import TeamView from './TeamView';
 import { GithubSettingsModal } from './GithubSettingsModal';
-import { saveAllData, saveToLocalStorage, getStoredToken, clearAllData, GITHUB_CONFIG } from '../services/dataService';
+import { saveAllData, saveToLocalStorage, getStoredToken, clearAllData, GITHUB_CONFIG, uploadImageToGitHub } from '../services/dataService';
 
 // 公开数据基础 URL
 const DATA_BASE = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.dataPath}`;
@@ -165,6 +165,44 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     const reader = new FileReader();
     reader.onload = (ev) => {
       setter(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 上传图片到 GitHub 并返回 URL（避免 base64 占用 localStorage 配额）
+  const handleTestimonialImageUpload = async (testimonialIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 检查文件大小（限制 2MB）
+    if (file.size > 2 * 1024 * 1024) {
+      alert('이미지 크기는 2MB 이하여야 합니다.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const token = getStoredToken();
+
+      if (token) {
+        // 有 Token：立即上传到 GitHub，获取 URL
+        const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
+        const fileName = `testimonial-avatar-${testimonialIndex}-${Date.now()}.${safeExt}`;
+        setSyncStatus({ type: 'pushing', message: '이미지 업로드 중...' });
+        const url = await uploadImageToGitHub(dataUrl, fileName, token);
+        if (url) {
+          updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === testimonialIndex ? { ...t, avatar: url } : t) }));
+          setSyncStatus({ type: 'idle', message: '이미지 업로드 완료!', result: 'success' });
+        } else {
+          setSyncStatus({ type: 'idle', message: '이미지 업로드 실패', result: 'error' });
+        }
+      } else {
+        // 无 Token：提示用户设置 Token，暂时用 base64 预览（但不保存到 localStorage）
+        alert('GitHub Token이 설정되지 않았습니다. 이미지를 저장하려면 Token을 설정해주세요.');
+        updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === testimonialIndex ? { ...t, avatar: dataUrl } : t) }));
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -524,9 +562,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                         )}
                         <label className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
                           <Upload size={16} className="text-white" />
-                          <input type="file" className="hidden" accept="image/*" onChange={e => handleImgUpload(img => {
-                            updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === i ? { ...t, avatar: img } : t) }));
-                          }, e)} />
+                          <input type="file" className="hidden" accept="image/*" onChange={e => handleTestimonialImageUpload(i, e)} />
                         </label>
                       </div>
                       {t.avatar && (

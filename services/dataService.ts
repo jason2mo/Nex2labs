@@ -359,6 +359,16 @@ export async function saveAllData(
   return { success: true, data: dataToSave };
 }
 
+/** 上传单个图片到 GitHub 并返回 CDN URL */
+export async function uploadImageToGitHub(dataUrl: string, fileName: string, token: string): Promise<string | null> {
+  if (!dataUrl.startsWith('data:')) return null;
+  const base64 = dataUrl.split(',')[1];
+  if (!base64) return null;
+  const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
+  const ok = await uploadFileToRepo(path, base64, token);
+  return ok ? `${IMG_BASE}/${fileName}` : null;
+}
+
 /** 将管理员列表同步到 GitHub（需 Token） */
 export async function saveAdminsToRepo(admins: Admin[], token: string): Promise<{ success: boolean; error?: string }> {
   const path = `${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.adminsFile}`;
