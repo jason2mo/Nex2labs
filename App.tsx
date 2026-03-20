@@ -119,6 +119,16 @@ const App: React.FC = () => {
       }
     }
     
+    // 版本检测：每次构建后自动清除旧缓存
+    const savedVersion = localStorage.getItem('nexto_labs_v6_version');
+    const currentVersion = __APP_VERSION__;
+    if (savedVersion && savedVersion !== currentVersion) {
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('nexto_labs_v6_')) localStorage.removeItem(key);
+      });
+    }
+    localStorage.setItem('nexto_labs_v6_version', currentVersion);
+    
     setTimeout(() => setIsAppReady(true), 1200);
   }, []);
 
