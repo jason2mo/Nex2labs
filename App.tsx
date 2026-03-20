@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Key, ChevronDown, Layout, Settings, User, ShoppingBag, Mail, RefreshCw } from 'lucide-react';
 import { Product, Order, Customer, Admin, Session, ScopePost, HomeData, ScopeCategory, Inquiry } from './types';
-import { DEFAULT_HOME_DATA, DEFAULT_SCOPE_CATEGORIES, STORAGE_KEYS } from './constants';
+import { DEFAULT_HOME_DATA, DEFAULT_SCOPE_CATEGORIES, STORAGE_KEYS, MASTER_ADMIN_CODE } from './constants';
 import Gateway from './components/Gateway';
 import AdminView from './components/AdminView';
 import CustomerView from './components/CustomerView';
@@ -128,7 +128,11 @@ const App: React.FC = () => {
     
     if (sess) {
       try {
-        const parsedSession = JSON.parse(sess);
+        const parsedSession = JSON.parse(sess) as Session;
+        // 마스터 세션은 저장된 code가 예전 값일 수 있음 → 항상 현재 MASTER_ADMIN_CODE 로 표시
+        if (parsedSession.type === 'admin' && parsedSession.data?.id === 'master') {
+          parsedSession.data = { ...parsedSession.data, code: MASTER_ADMIN_CODE };
+        }
         setSession(parsedSession);
         restoredSessionRef.current = true;
       } catch (e) {
