@@ -270,12 +270,14 @@ async function getFileSha(path: string, token: string): Promise<string | undefin
   return undefined;
 }
 
-// 保存数据到 GitHub（409 时用最新 SHA 重试一次）
-async function saveFileToRepo(path: string, content: string, token: string, retryOn409 = true): Promise<{ success: boolean; error?: string }> {
+// 保存数据到 GitHub（409 时自动获取最新 SHA 重试，最多 3 次）
+async function saveFileToRepo(path: string, content: string, token: string, maxRetries = 3): Promise<{ success: boolean; error?: string }> {
   const encodedContent = btoa(unescape(encodeURIComponent(content)));
-  let sha = await getFileSha(path, token);
-
-  const doPut = async (): Promise<{ success: boolean; error?: string }> => {
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    // 每次重试前都获取最新 SHA
+    const sha = await getFileSha(path, token);
+    
     const payload: Record<string, unknown> = {
       message: `Update ${path} - ${new Date().toLocaleString()}`,
       content: encodedContent,
@@ -294,24 +296,34 @@ async function saveFileToRepo(path: string, content: string, token: string, retr
         body: JSON.stringify(payload),
       });
 
-      const resText = await res.text();
       if (res.ok) return { success: true };
 
-      // 409 Conflict：服务端文件已变更，用最新 SHA 重试一次
-      if (res.status === 409 && retryOn409) {
-        const newSha = await getFileSha(path, token);
-        if (newSha) {
-          sha = newSha;
-          return saveFileToRepo(path, content, token, false);
-        }
+      const resText = await res.text();
+      
+      // 409 Conflict：文件在远程被修改，等待 200ms 后重试（最多 3 次）
+      if (res.status === 409 && attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1))); // 递增延迟：200ms, 400ms, 600ms
+        continue; // 继续下一次循环，重新获取 SHA
       }
+      
+      // 非 409 错误，或重试次数用完，返回错误
+      if (res.status === 409) {
+        return { 
+          success: false, 
+          error: `파일 충돌: ${path}가 다른 곳에서 수정되었습니다. "GitHub에서 가져오기"를 클릭한 후 다시 저장해주세요.` 
+        };
+      }
+      
       return { success: false, error: resText };
     } catch (e) {
-      return { success: false, error: (e as Error).message };
+      if (attempt === maxRetries - 1) {
+        return { success: false, error: (e as Error).message };
+      }
+      await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1)));
     }
-  };
-
-  return doPut();
+  }
+  
+  return { success: false, error: '최대 재시도 횟수 초과' };
 }
 
 export async function saveAllData(
