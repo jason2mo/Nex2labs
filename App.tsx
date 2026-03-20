@@ -56,6 +56,63 @@ const App: React.FC = () => {
   // 下拉刷新：清空缓存并从 GitHub 获取最新数据
   useEffect(() => {
     const TRIGGER_THRESHOLD = 90;
+    // 电脑端滚轮在顶部向上滚的计数器
+    const wheelUpCountRef = { count: 0, timer: 0 as ReturnType<typeof setTimeout> | 0 };
+
+    const doRefresh = async () => {
+      setPullState('refreshing');
+      clearAllData();
+      setHomeData(DEFAULT_HOME_DATA);
+      setScopePosts([]);
+      setScopeCategories(DEFAULT_SCOPE_CATEGORIES);
+      try {
+        const data = await fetchPublicData();
+        if (data?.homeData) setHomeData(data.homeData);
+        if (data?.scopePosts) setScopePosts(data.scopePosts);
+        if (data?.scopeCategories) setScopeCategories(data.scopeCategories);
+      } catch {}
+      setPullState('idle');
+    };
+
+    const showIndicator = (progress: number) => {
+      if (pullIndicatorRef.current) {
+        pullIndicatorRef.current.style.transform = `translateY(${Math.min(progress * TRIGGER_THRESHOLD * 0.5, TRIGGER_THRESHOLD * 0.5)}px)`;
+        pullIndicatorRef.current.style.opacity = String(progress);
+      }
+    };
+
+    const resetIndicator = () => {
+      if (pullIndicatorRef.current) {
+        pullIndicatorRef.current.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        pullIndicatorRef.current.style.transform = 'translateY(0)';
+        pullIndicatorRef.current.style.opacity = '0';
+      }
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      // 仅在顶部 + 向上滚动时触发
+      if (window.scrollY !== 0 || e.deltaY >= 0) {
+        wheelUpCountRef.count = 0;
+        if (window.scrollY > 0 && pullState !== 'idle' && pullState !== 'refreshing') setPullState('idle');
+        return;
+      }
+      if (pullState === 'refreshing') return;
+
+      wheelUpCountRef.count++;
+      clearTimeout(wheelUpCountRef.timer);
+      wheelUpCountRef.timer = setTimeout(() => { wheelUpCountRef.count = 0; resetIndicator(); }, 2000);
+
+      const progress = Math.min(wheelUpCountRef.count / 2, 1);
+      setPullState(progress >= 1 ? 'triggered' : 'pulling');
+      showIndicator(progress);
+
+      if (wheelUpCountRef.count >= 2) {
+        resetIndicator();
+        wheelUpCountRef.count = 0;
+        clearTimeout(wheelUpCountRef.timer);
+        doRefresh();
+      }
+    };
 
     const onTouchStart = (e: TouchEvent) => {
       if (window.scrollY === 0) {
@@ -71,100 +128,50 @@ const App: React.FC = () => {
         pullDeltaY.current = delta;
         const progress = Math.min(delta / TRIGGER_THRESHOLD, 1);
         setPullState(progress >= 1 ? 'triggered' : 'pulling');
-        if (pullIndicatorRef.current) {
-          pullIndicatorRef.current.style.transform = `translateY(${Math.min(delta * 0.5, TRIGGER_THRESHOLD * 0.5)}px)`;
-          pullIndicatorRef.current.style.opacity = String(progress);
-        }
+        showIndicator(progress);
         e.preventDefault();
       }
     };
 
-    const onTouchEnd = async () => {
+    const onTouchEnd = () => {
       if (pullState === 'idle') return;
       const delta = pullDeltaY.current;
-
-      // 还原指示器位置
-      if (pullIndicatorRef.current) {
-        pullIndicatorRef.current.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-        pullIndicatorRef.current.style.transform = 'translateY(0)';
-        pullIndicatorRef.current.style.opacity = '0';
-      }
+      resetIndicator();
 
       if (delta >= TRIGGER_THRESHOLD) {
-        setPullState('refreshing');
-        // 清空所有缓存
-        clearAllData();
-        // 重新加载默认数据并触发 GitHub 拉取
-        setHomeData(DEFAULT_HOME_DATA);
-        setScopePosts([]);
-        setScopeCategories(DEFAULT_SCOPE_CATEGORIES);
-        try {
-          const data = await fetchPublicData();
-          if (data?.homeData) setHomeData(data.homeData);
-          if (data?.scopePosts) setScopePosts(data.scopePosts);
-          if (data?.scopeCategories) setScopeCategories(data.scopeCategories);
-        } catch {}
+        pullStartY.current = 0;
+        pullDeltaY.current = 0;
+        doRefresh();
+        return;
       }
 
       pullStartY.current = 0;
       pullDeltaY.current = 0;
       setTimeout(() => {
-        if (pullIndicatorRef.current) {
-          pullIndicatorRef.current.style.transition = '';
-        }
+        if (pullIndicatorRef.current) pullIndicatorRef.current.style.transition = '';
         setPullState('idle');
       }, 400);
     };
 
-    const onMouseDown = (e: MouseEvent) => {
-      if (window.scrollY === 0) {
-        pullStartY.current = e.clientY;
-        pullDeltaY.current = 0;
-      }
-    };
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (pullStartY.current === 0 || window.scrollY > 0) return;
-      const delta = e.clientY - pullStartY.current;
-      if (delta > 0) {
-        pullDeltaY.current = delta;
-        const progress = Math.min(delta / TRIGGER_THRESHOLD, 1);
-        setPullState(progress >= 1 ? 'triggered' : 'pulling');
-        if (pullIndicatorRef.current) {
-          pullIndicatorRef.current.style.transform = `translateY(${Math.min(delta * 0.5, TRIGGER_THRESHOLD * 0.5)}px)`;
-          pullIndicatorRef.current.style.opacity = String(progress);
-        }
-        e.preventDefault();
-      }
-    };
-
-    const onMouseUp = () => {
-      if (pullState === 'idle') return;
-      onTouchEnd();
-    };
-
     const onScroll = () => {
       if (window.scrollY > 0) {
+        wheelUpCountRef.count = 0;
         pullStartY.current = 0;
         if (pullState !== 'idle' && pullState !== 'refreshing') setPullState('idle');
       }
     };
 
+    window.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
     window.addEventListener('touchend', onTouchEnd);
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mousemove', onMouseMove, { passive: false });
-    window.addEventListener('mouseup', onMouseUp);
     window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
+      window.removeEventListener('wheel', onWheel);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
-      window.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('scroll', onScroll);
     };
   }, [pullState]);
@@ -452,7 +459,7 @@ const App: React.FC = () => {
             <div className="w-5 h-5 border-2 border-[#FF6B00]/60 border-t-[#FF6B00] rounded-full animate-spin" style={{ animationDuration: '1.2s' }} />
           )}
           <span className="text-[9px] font-black text-[#FF6B00]/80 uppercase tracking-widest">
-            {pullState === 'triggered' ? ' RELEASE TO REFRESH' : pullState === 'refreshing' ? 'REFRESHING...' : 'PULL DOWN'}
+            {pullState === 'triggered' ? 'RELEASE TO REFRESH' : pullState === 'refreshing' ? 'REFRESHING...' : 'SCROLL UP'}
           </span>
         </div>
       </div>
