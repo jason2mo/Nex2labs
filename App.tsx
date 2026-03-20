@@ -12,7 +12,7 @@ import HomepageManagementView from './components/HomepageManagementView';
 import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
-import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, clearOldData } from './services/dataService';
+import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, clearOldData, setupAutoClearOnClose } from './services/dataService';
 
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
 
@@ -38,6 +38,11 @@ const App: React.FC = () => {
   // GitHub 자동 동기화
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+
+  // 关闭网页时自动清除缓存
+  useEffect(() => {
+    setupAutoClearOnClose();
+  }, []);
 
   useEffect(() => {
     if (!isAppReady) return;
