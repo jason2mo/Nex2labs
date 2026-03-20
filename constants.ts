@@ -1,5 +1,5 @@
 
-export const MASTER_ADMIN_CODE = "0316";
+export const MASTER_ADMIN_CODE = "0101";
 
 export const STORAGE_KEYS = {
   PRODUCTS: 'nexto_labs_v6_products',

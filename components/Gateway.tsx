@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
 import { Customer, Admin, Session } from '../types';
-
-const MASTER_ADMIN_CODE = "0316";
+import { MASTER_ADMIN_CODE } from '../constants';
 
 const HARSH_MESSAGES = [
   "인증 코드가 유효하지 않습니다.",

@@ -190,6 +190,10 @@ const App: React.FC = () => {
 
   // 중앙 삭제 처리 함수
   const handleDeleteItem = useCallback((type: 'products' | 'orders' | 'customers' | 'admins', id: string) => {
+    if (type === 'admins' && session?.data.id !== 'master') {
+      alert('일반 관리자는 다른 관리자를 삭제할 수 없습니다.');
+      return;
+    }
     if (!window.confirm('항목을 삭제하시겠습니까?')) return;
     
     switch (type) {
@@ -202,7 +206,7 @@ const App: React.FC = () => {
         return next;
       }); break;
     }
-  }, []);
+  }, [session]);
 
   const handleNavigate = (view: ViewState) => {
     setCurrentView(view);
@@ -283,6 +287,7 @@ const App: React.FC = () => {
             onAdminsPersist={handleAdminsChange}
             syncError={adminsSyncError}
             onClearSyncError={() => setAdminsSyncError(null)}
+            isMaster={session?.data.id === 'master'}
           />
         ) : <HomeView {...commonProps} />;
       case 'homepage_mgmt':

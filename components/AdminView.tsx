@@ -11,10 +11,12 @@ interface AdminViewProps {
   onAdminsPersist?: (list: Admin[]) => void | Promise<void>;
   syncError?: string | null;
   onClearSyncError?: () => void;
+  /** 当前登录者是否为 마스터 관리자 */
+  isMaster: boolean;
 }
 
 const AdminView: React.FC<AdminViewProps> = ({ 
-  admins, setAdmins, onDeleteItem, onAdminsPersist, syncError, onClearSyncError
+  admins, setAdmins, onDeleteItem, onAdminsPersist, syncError, onClearSyncError, isMaster
 }) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [af, setAf] = useState({ name: '', code: '' });
@@ -39,7 +41,8 @@ const AdminView: React.FC<AdminViewProps> = ({
   return (
     <div className="animate-fade-in text-white">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Left: Add Admin Form */}
+        {/* Left: Add Admin Form — 마스터만 표시 */}
+        {isMaster ? (
         <div className="bg-[#FAF9F6] p-6 md:p-8 border border-white/20 text-black">
           <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-widest mb-6 md:mb-8 flex items-center gap-3 text-black">
             <ShieldCheck size={14}/> 관리자 추가
@@ -85,6 +88,14 @@ const AdminView: React.FC<AdminViewProps> = ({
               GitHub에 동기화 중...
             </div>
           )}
+        </div>
+        ) : (
+        <div className="bg-[#FAF9F6] p-6 md:p-8 border border-white/20 text-black flex flex-col items-center justify-center min-h-[200px] text-center">
+          <ShieldCheck size={28} className="text-black/20 mb-3"/>
+          <p className="text-[11px] font-black text-black/40 uppercase tracking-widest">일반 관리자</p>
+          <p className="text-[10px] text-black/30 mt-2 leading-relaxed">관리자 추가·삭제는<br/>마스터 관리자만 가능합니다.</p>
+        </div>
+        )}
 
         {/* Right: Admin List */}
         <div className="bg-[#FAF9F6] border-2 border-white/20 min-h-[300px] overflow-hidden text-black">
@@ -98,7 +109,7 @@ const AdminView: React.FC<AdminViewProps> = ({
                     <p className="text-[10px] font-black text-black/60 mt-1 tracking-widest">인증키: {a.code}</p>
                   </div>
                 </div>
-                {a.id !== 'master' && (
+                {isMaster && a.id !== 'master' && (
                   <button 
                     type="button" 
                     onClick={() => onDeleteItem('admins', a.id)} 
