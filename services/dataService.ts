@@ -115,17 +115,36 @@ function getFixedImgName(prefix: string, dataUrl: string, idx?: number): string 
   return idx !== undefined ? `${prefix}-${idx}.${ext}` : `${prefix}.${ext}`;
 }
 
+// 验证文件是否可以通过 CDN 访问（最多重试 5 次，每次等待 1 秒）
+async function verifyFileAccessible(url: string, maxRetries = 5): Promise<boolean> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const res = await fetch(`${url}?t=${Date.now()}`, { method: 'HEAD', cache: 'no-cache' });
+      if (res.ok) {
+        return true;
+      }
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 等待 1 秒后重试
+      }
+    } catch {
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+  }
+  return false;
+}
+
 // 上传文件到 GitHub（409 时自动获取最新 SHA 重试，最多 3 次）
 async function uploadFileToRepo(path: string, base64Content: string, token: string, maxRetries = 3): Promise<boolean> {
-  // 检查文件名是否包含时间戳（新文件），如果是，第一次尝试时跳过获取 SHA
+  // 检查文件名是否包含时间戳（新文件），如果是，跳过获取 SHA
   const isNewFile = /\d{13,}/.test(path); // 文件名包含 13 位或更多数字（时间戳）
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    // 每次重试前都获取最新 SHA（新文件第一次尝试时跳过）
     let sha: string | undefined;
     
-    // 如果是新文件且是第一次尝试，跳过获取 SHA（避免不必要的 404）
-    if (!(isNewFile && attempt === 0)) {
+    // 只有非新文件或重试时才获取 SHA（避免不必要的 404）
+    if (!isNewFile || attempt > 0) {
       try {
         const getRes = await fetch(`${API_BASE}/contents/${path}?ref=${GITHUB_CONFIG.branch}`, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
@@ -133,13 +152,10 @@ async function uploadFileToRepo(path: string, base64Content: string, token: stri
         if (getRes.ok) {
           const info = await getRes.json();
           sha = info.sha;
-        } else if (getRes.status === 404) {
-          // 404 是正常的（文件不存在，新文件），不需要 SHA，继续上传
-          sha = undefined;
         }
-        // 其他状态码（403, 500 等）也继续尝试上传
+        // 404 或其他错误都继续尝试上传（不提供 SHA）
       } catch {
-        // 网络错误，继续尝试上传（不提供 SHA，作为新文件上传）
+        // 网络错误，继续尝试上传
       }
     }
 
@@ -162,7 +178,6 @@ async function uploadFileToRepo(path: string, base64Content: string, token: stri
       });
 
       if (res.ok) {
-        console.log(`上传成功: ${path}`);
         return true;
       }
 
@@ -176,7 +191,6 @@ async function uploadFileToRepo(path: string, base64Content: string, token: stri
       
       // 409 Conflict：文件在远程被修改，等待后重试（最多 3 次）
       if (res.status === 409 && attempt < maxRetries - 1) {
-        console.log(`文件冲突，重试中 (${attempt + 1}/${maxRetries}): ${path}`);
         await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1))); // 递增延迟：200ms, 400ms, 600ms
         continue; // 继续下一次循环，重新获取 SHA
       }
@@ -408,7 +422,7 @@ export async function saveAllData(
   return { success: true, data: dataToSave };
 }
 
-/** 上传单个图片到 GitHub 并返回 CDN URL */
+/** 上传单个图片到 GitHub 并返回 CDN URL（上传后验证文件可访问） */
 export async function uploadImageToGitHub(dataUrl: string, fileName: string, token: string): Promise<string | null> {
   if (!dataUrl.startsWith('data:')) {
     console.warn('uploadImageToGitHub: 不是有效的 data URL');
@@ -420,14 +434,26 @@ export async function uploadImageToGitHub(dataUrl: string, fileName: string, tok
     return null;
   }
   const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
-  console.log(`上传图片: ${fileName}`);
+  const url = `${IMG_BASE}/${fileName}`;
+  
+  console.log(`开始上传图片: ${fileName}`);
   const ok = await uploadFileToRepo(path, base64, token);
-  if (ok) {
-    const url = `${IMG_BASE}/${fileName}`;
-    console.log(`上传成功: ${url}`);
+  
+  if (!ok) {
+    console.error(`上传失败: ${fileName}`);
+    return null;
+  }
+  
+  // 上传成功后，验证文件是否可以通过 CDN 访问
+  console.log(`验证文件可访问性: ${url}`);
+  const accessible = await verifyFileAccessible(url);
+  
+  if (accessible) {
+    console.log(`上传并验证成功: ${url}`);
     return url;
   } else {
-    console.error(`上传失败: ${fileName}`);
+    console.warn(`上传成功但文件暂不可访问: ${url}，将保持 base64 预览`);
+    // 返回 null，让前端保持 base64 预览
     return null;
   }
 }

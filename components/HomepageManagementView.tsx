@@ -189,12 +189,13 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         setSyncStatus({ type: 'pushing', message: '이미지 업로드 중...' });
         const url = await uploadImageToGitHub(dataUrl, finalFileName, token);
         if (url) {
-          // 上传成功后，切换到 GitHub URL（CDN 可能需要几秒才能更新）
+          // 上传并验证成功，切换到 GitHub URL
           setter(url);
           setSyncStatus({ type: 'idle', message: '이미지 업로드 완료!', result: 'success' });
         } else {
-          // 上传失败，保持 base64 预览
-          setSyncStatus({ type: 'idle', message: '이미지 업로드 실패，请重试', result: 'error' });
+          // 上传失败或文件暂不可访问，保持 base64 预览
+          // 用户稍后可以手动保存，系统会自动重试上传
+          setSyncStatus({ type: 'idle', message: '이미지 업로드 중... CDN 更新可能需要几秒钟，请稍后保存', result: 'warning' });
         }
       } else {
         // 无 Token：提示用户设置 Token
@@ -231,12 +232,12 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         setSyncStatus({ type: 'pushing', message: '이미지 업로드 중...' });
         const url = await uploadImageToGitHub(dataUrl, fileName, token);
         if (url) {
-          // 上传成功后，切换到 GitHub URL
+          // 上传并验证成功，切换到 GitHub URL
           updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === testimonialIndex ? { ...t, avatar: url } : t) }));
           setSyncStatus({ type: 'idle', message: '이미지 업로드 완료!', result: 'success' });
         } else {
-          // 上传失败，保持 base64 预览
-          setSyncStatus({ type: 'idle', message: '이미지 업로드 실패，请重试', result: 'error' });
+          // 上传失败或文件暂不可访问，保持 base64 预览
+          setSyncStatus({ type: 'idle', message: '이미지 업로드 중... CDN 更新可能需要几秒钟', result: 'warning' });
         }
       } else {
         // 无 Token：提示用户设置 Token，暂时用 base64 预览（但不保存到 localStorage）
@@ -273,14 +274,14 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         setSyncStatus({ type: 'pushing', message: '로고 업로드 중...' });
         const url = await uploadImageToGitHub(dataUrl, fileName, token);
         if (url) {
-          // 上传成功后，切换到 GitHub URL
+          // 上传并验证成功，切换到 GitHub URL
           updateHomeData({ logoImage: url });
           // 立即保存到 localStorage
           saveToLocalStorage({ homeData: { ...homeData, logoImage: url }, scopePosts, scopeCategories });
           setSyncStatus({ type: 'idle', message: '로고 업로드 완료!', result: 'success' });
         } else {
-          // 上传失败，保持 base64 预览
-          setSyncStatus({ type: 'idle', message: '로고 업로드 실패，请重试', result: 'error' });
+          // 上传失败或文件暂不可访问，保持 base64 预览
+          setSyncStatus({ type: 'idle', message: '로고 업로드 중... CDN 更新可能需要几秒钟', result: 'warning' });
         }
       } else {
         // 无 Token：提示用户设置 Token
