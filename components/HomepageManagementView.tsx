@@ -256,10 +256,10 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       const token = getStoredToken();
 
       if (token) {
-        // 有 Token：立即上传到 GitHub，获取 URL
+        // 有 Token：立即上传到 GitHub，获取 URL（使用时间戳避免冲突）
         const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
         const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
-        const fileName = `logo.${safeExt}`;
+        const fileName = `logo-${Date.now()}.${safeExt}`;
         setSyncStatus({ type: 'pushing', message: '로고 업로드 중...' });
         const url = await uploadImageToGitHub(dataUrl, fileName, token);
         if (url) {
@@ -432,7 +432,13 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                       <p className="text-[9px] font-black text-white/50">클릭하여 로고 업로드</p>
                     </div>
                   )}
-                  <input type="file" className="hidden" accept="image/*" onChange={e => handleGenericImageUpload(img => updateHomeData({ loadingLogo: img }), 'loading-logo.png', e)} />
+                  <input type="file" className="hidden" accept="image/*" onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
+                    handleGenericImageUpload(img => updateHomeData({ loadingLogo: img }), `loading-logo-${Date.now()}.${safeExt}`, e);
+                  }} />
                 </label>
                 <p className="text-[9px] text-white/50 mt-1">설정하면 메인 로고 대신 이 로고가 표시됩니다.</p>
               </div>
@@ -468,7 +474,13 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                     <p className="text-[10px] font-black text-white/50">히어로 배경 이미지 업로드</p>
                   </div>
                 )}
-                <input type="file" className="hidden" accept="image/*" onChange={e => handleGenericImageUpload(img => updateHomeData({ heroImage: img }), 'heroImage.jpg', e)} />
+                <input type="file" className="hidden" accept="image/*" onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'jpg';
+                  handleGenericImageUpload(img => updateHomeData({ heroImage: img }), `heroImage-${Date.now()}.${safeExt}`, e);
+                }} />
               </label>
             </div>
             <div className="space-y-2">
@@ -529,7 +541,13 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
               <label className="text-[10px] font-black text-white/50 uppercase">소개 이미지</label>
               <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-8 text-center cursor-pointer hover:bg-white/10 mt-2 text-white">
                 {homeData.aboutImage ? <img src={homeData.aboutImage} className="max-h-24 mx-auto" alt="About" /> : <ImageIcon className="mx-auto opacity-20" />}
-                <input type="file" className="hidden" accept="image/*" onChange={e => handleGenericImageUpload(img => updateHomeData({ aboutImage: img }), 'aboutImage.png', e)} />
+                <input type="file" className="hidden" accept="image/*" onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
+                  handleGenericImageUpload(img => updateHomeData({ aboutImage: img }), `aboutImage-${Date.now()}.${safeExt}`, e);
+                }} />
               </label>
             </div>
           </div>
