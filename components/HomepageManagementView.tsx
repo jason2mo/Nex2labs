@@ -519,20 +519,20 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                         <label className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
                           <Upload size={16} className="text-white" />
                           <input type="file" className="hidden" accept="image/*" onChange={e => handleImgUpload(img => {
-                            updateHomeData({ testimonials: homeData.testimonials.map((t, idx) => idx === i ? { ...t, avatar: img } : t) });
+                            updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === i ? { ...t, avatar: img } : t) }));
                           }, e)} />
                         </label>
                       </div>
                       {t.avatar && (
                         <button onClick={() => {
-                          updateHomeData({ testimonials: homeData.testimonials.map((t, idx) => idx === i ? { ...t, avatar: null } : t) });
+                          updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === i ? { ...t, avatar: null } : t) }));
                         }} className="text-[8px] font-black text-red-400 uppercase block">삭제</button>
                       )}
                     </div>
                     
                     <div className="flex-1 space-y-3">
-                      <input value={t.name} onChange={e => { const list = [...homeData.testimonials]; list[i].name = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/20 text-[11px] font-black text-white placeholder:text-white/40" placeholder="성함" />
-                      <input value={t.role} onChange={e => { const list = [...homeData.testimonials]; list[i].role = e.target.value; updateHomeData({ testimonials: list }); }} className="w-full bg-transparent border-b border-white/20 text-[10px] text-white/70 font-bold placeholder:text-white/40" placeholder="직함" />
+                      <input value={t.name} onChange={e => { updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === i ? { ...t, name: e.target.value } : t) })); }} className="w-full bg-transparent border-b border-white/20 text-[11px] font-black text-white placeholder:text-white/40" placeholder="성함" />
+                      <input value={t.role} onChange={e => { updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === i ? { ...t, role: e.target.value } : t) })); }} className="w-full bg-transparent border-b border-white/20 text-[10px] text-white/70 font-bold placeholder:text-white/40" placeholder="직함" />
                     </div>
                   </div>
                   
@@ -767,7 +767,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                   <div><p className="font-bold text-sm">{t.name}</p><p className="text-[10px] opacity-30 uppercase">{t.role}</p></div>
                 </div>
                 <div className="w-16 h-16 rounded-full overflow-hidden border border-black/20 bg-[#FAF9F6] flex items-center justify-center shrink-0">
-                  {t.avatar ? <img src={t.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0" alt={t.name} /> : <User size={24} className="opacity-20" />}
+                  {t.avatar ? <img src={t.avatar} className="w-full h-full object-cover grayscale group-hover:grayscale-0" alt={t.name} onError={e => { e.currentTarget.style.display = 'none'; }} /> : <User size={24} className="opacity-20" />}
                 </div>
               </div>
             ))}
