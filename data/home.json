@@ -42,15 +42,15 @@
   "testimonials": [
     {
       "name": "정준화",
-      "role": "CEO at Nexus",
+      "role": "CEO at Nexto",
       "text": "일을잘못하면 돌솥밥을구워야한다 ",
       "avatar": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/testimonial-avatar-0.png"
     },
     {
-      "name": "Samantha Leonardo",
-      "role": "Product Manager",
+      "name": "박명호",
+      "role": "CEO at Nexto",
       "text": "로컬 퍼스트 전략의 진정한 가치를 발견할 수 있는 유일한 솔루션입니다.",
-      "avatar": null
+      "avatar": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/testimonial-avatar-1-1773992609859.png"
     }
   ],
   "ctaTitle": "DIVE INTO THE\nFUTURE",
