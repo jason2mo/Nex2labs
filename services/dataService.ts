@@ -242,49 +242,64 @@ async function uploadImagesAndReplaceUrls(
   return result;
 }
 
-// 保存数据到 GitHub
-async function saveFileToRepo(path: string, content: string, token: string): Promise<{ success: boolean; error?: string }> {
-  const encodedContent = btoa(unescape(encodeURIComponent(content)));
-
-  let sha: string | undefined;
+// 获取文件当前 SHA
+async function getFileSha(path: string, token: string): Promise<string | undefined> {
   try {
     const getRes = await fetch(`${API_BASE}/contents/${path}?ref=${GITHUB_CONFIG.branch}`, {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
     });
     if (getRes.ok) {
       const info = await getRes.json();
-      sha = info.sha;
+      return info.sha;
     }
   } catch (e) {
     console.warn('获取 SHA 失败:', e);
   }
+  return undefined;
+}
 
-  const payload: Record<string, unknown> = {
-    message: `Update ${path} - ${new Date().toLocaleString()}`,
-    content: encodedContent,
-    branch: GITHUB_CONFIG.branch,
-  };
-  if (sha) payload.sha = sha;
+// 保存数据到 GitHub（409 时用最新 SHA 重试一次）
+async function saveFileToRepo(path: string, content: string, token: string, retryOn409 = true): Promise<{ success: boolean; error?: string }> {
+  const encodedContent = btoa(unescape(encodeURIComponent(content)));
+  let sha = await getFileSha(path, token);
 
-  try {
-    const res = await fetch(`${API_BASE}/contents/${path}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/vnd.github+json',
-      },
-      body: JSON.stringify(payload),
-    });
+  const doPut = async (): Promise<{ success: boolean; error?: string }> => {
+    const payload: Record<string, unknown> = {
+      message: `Update ${path} - ${new Date().toLocaleString()}`,
+      content: encodedContent,
+      branch: GITHUB_CONFIG.branch,
+    };
+    if (sha) payload.sha = sha;
 
-    if (!res.ok) {
-      const errText = await res.text();
-      return { success: false, error: errText };
+    try {
+      const res = await fetch(`${API_BASE}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/vnd.github+json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const resText = await res.text();
+      if (res.ok) return { success: true };
+
+      // 409 Conflict：服务端文件已变更，用最新 SHA 重试一次
+      if (res.status === 409 && retryOn409) {
+        const newSha = await getFileSha(path, token);
+        if (newSha) {
+          sha = newSha;
+          return saveFileToRepo(path, content, token, false);
+        }
+      }
+      return { success: false, error: resText };
+    } catch (e) {
+      return { success: false, error: (e as Error).message };
     }
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: (e as Error).message };
-  }
+  };
+
+  return doPut();
 }
 
 export async function saveAllData(
@@ -305,16 +320,17 @@ export async function saveAllData(
     errors.push(`图片上传失败: ${(e as Error).message}`);
   }
 
-  // 保存三个文件
-  const results = await Promise.all([
-    saveFileToRepo(`${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.homeFile}`, JSON.stringify(dataToSave.homeData, null, 2), token),
-    saveFileToRepo(`${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.postsFile}`, JSON.stringify(dataToSave.scopePosts, null, 2), token),
-    saveFileToRepo(`${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.categoriesFile}`, JSON.stringify(dataToSave.scopeCategories, null, 2), token),
-  ]);
-
-  const failed = results.filter(r => !r.success);
-  if (failed.length > 0) {
-    return { success: false, error: failed.map(r => r.error).join('; ') };
+  // 按顺序保存三个文件，避免并行写入导致 409 冲突
+  const toSave: [string, string][] = [
+    [`${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.homeFile}`, JSON.stringify(dataToSave.homeData, null, 2)],
+    [`${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.postsFile}`, JSON.stringify(dataToSave.scopePosts, null, 2)],
+    [`${GITHUB_CONFIG.dataPath}/${GITHUB_CONFIG.categoriesFile}`, JSON.stringify(dataToSave.scopeCategories, null, 2)],
+  ];
+  for (const [filePath, content] of toSave) {
+    const result = await saveFileToRepo(filePath, content, token);
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
   }
 
   return { success: true };
