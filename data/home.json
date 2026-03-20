@@ -101,15 +101,15 @@
     {
       "id": "m1",
       "name": "정준화",
-      "role": "대표",
-      "bio": "한국 ",
+      "role": "Chief Engineer",
+      "bio": "시스템 아키텍처 및 보안 전문가",
       "image": null
     },
     {
       "id": "m2",
       "name": "박명호",
-      "role": "대표",
-      "bio": "중국",
+      "role": "Design Lead",
+      "bio": "사용자 경험 및 인터페이스 디자인 전문가",
       "image": null
     }
   ],
