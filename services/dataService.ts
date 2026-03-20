@@ -117,23 +117,30 @@ function getFixedImgName(prefix: string, dataUrl: string, idx?: number): string 
 
 // 上传文件到 GitHub（409 时自动获取最新 SHA 重试，最多 3 次）
 async function uploadFileToRepo(path: string, base64Content: string, token: string, maxRetries = 3): Promise<boolean> {
+  // 检查文件名是否包含时间戳（新文件），如果是，第一次尝试时跳过获取 SHA
+  const isNewFile = /\d{13,}/.test(path); // 文件名包含 13 位或更多数字（时间戳）
+  
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    // 每次重试前都获取最新 SHA
+    // 每次重试前都获取最新 SHA（新文件第一次尝试时跳过）
     let sha: string | undefined;
-    try {
-      const getRes = await fetch(`${API_BASE}/contents/${path}?ref=${GITHUB_CONFIG.branch}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
-      });
-      if (getRes.ok) {
-        const info = await getRes.json();
-        sha = info.sha;
-      } else if (getRes.status === 404) {
-        // 404 是正常的（文件不存在，新文件），不需要 SHA，继续上传
-        sha = undefined;
+    
+    // 如果是新文件且是第一次尝试，跳过获取 SHA（避免不必要的 404）
+    if (!(isNewFile && attempt === 0)) {
+      try {
+        const getRes = await fetch(`${API_BASE}/contents/${path}?ref=${GITHUB_CONFIG.branch}`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+        });
+        if (getRes.ok) {
+          const info = await getRes.json();
+          sha = info.sha;
+        } else if (getRes.status === 404) {
+          // 404 是正常的（文件不存在，新文件），不需要 SHA，继续上传
+          sha = undefined;
+        }
+        // 其他状态码（403, 500 等）也继续尝试上传
+      } catch {
+        // 网络错误，继续尝试上传（不提供 SHA，作为新文件上传）
       }
-      // 其他状态码（403, 500 等）也继续尝试上传
-    } catch {
-      // 网络错误，继续尝试上传（不提供 SHA，作为新文件上传）
     }
 
     const payload: Record<string, unknown> = {
