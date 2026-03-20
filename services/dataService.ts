@@ -127,9 +127,13 @@ async function uploadFileToRepo(path: string, base64Content: string, token: stri
       if (getRes.ok) {
         const info = await getRes.json();
         sha = info.sha;
+      } else if (getRes.status === 404) {
+        // 404 是正常的（文件不存在，新文件），不需要 SHA，继续上传
+        sha = undefined;
       }
+      // 其他状态码（403, 500 等）也继续尝试上传
     } catch {
-      // 文件不存在时 sha 为 undefined，这是正常的
+      // 网络错误，继续尝试上传（不提供 SHA，作为新文件上传）
     }
 
     const payload: Record<string, unknown> = {
@@ -150,18 +154,34 @@ async function uploadFileToRepo(path: string, base64Content: string, token: stri
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) return true;
+      if (res.ok) {
+        console.log(`上传成功: ${path}`);
+        return true;
+      }
 
+      let errorMsg = '';
+      try {
+        const resJson = await res.json();
+        errorMsg = resJson.message || JSON.stringify(resJson);
+      } catch {
+        errorMsg = await res.text();
+      }
+      
       // 409 Conflict：文件在远程被修改，等待后重试（最多 3 次）
       if (res.status === 409 && attempt < maxRetries - 1) {
+        console.log(`文件冲突，重试中 (${attempt + 1}/${maxRetries}): ${path}`);
         await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1))); // 递增延迟：200ms, 400ms, 600ms
         continue; // 继续下一次循环，重新获取 SHA
       }
 
-      // 非 409 错误，或重试次数用完
+      // 其他错误（422 验证失败等）
+      console.error(`上传失败 (${res.status}): ${path}`, errorMsg);
       return false;
-    } catch {
-      if (attempt === maxRetries - 1) return false;
+    } catch (err) {
+      if (attempt === maxRetries - 1) {
+        console.warn('上传网络错误:', err);
+        return false;
+      }
       await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1)));
     }
   }
@@ -383,12 +403,26 @@ export async function saveAllData(
 
 /** 上传单个图片到 GitHub 并返回 CDN URL */
 export async function uploadImageToGitHub(dataUrl: string, fileName: string, token: string): Promise<string | null> {
-  if (!dataUrl.startsWith('data:')) return null;
+  if (!dataUrl.startsWith('data:')) {
+    console.warn('uploadImageToGitHub: 不是有效的 data URL');
+    return null;
+  }
   const base64 = dataUrl.split(',')[1];
-  if (!base64) return null;
+  if (!base64) {
+    console.warn('uploadImageToGitHub: 无法提取 base64 内容');
+    return null;
+  }
   const path = `${GITHUB_CONFIG.imagePath}/${fileName}`;
+  console.log(`上传图片: ${fileName}`);
   const ok = await uploadFileToRepo(path, base64, token);
-  return ok ? `${IMG_BASE}/${fileName}` : null;
+  if (ok) {
+    const url = `${IMG_BASE}/${fileName}`;
+    console.log(`上传成功: ${url}`);
+    return url;
+  } else {
+    console.error(`上传失败: ${fileName}`);
+    return null;
+  }
 }
 
 /** 将管理员列表同步到 GitHub（需 Token） */

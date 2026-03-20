@@ -180,17 +180,21 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       const token = getStoredToken();
 
       if (token) {
-        // 有 Token：立即上传到 GitHub，获取 URL
+        // 有 Token：先使用 base64 预览，然后上传到 GitHub
+        setter(dataUrl); // 立即显示预览
+        
         const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
         const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
         const finalFileName = fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.gif') || fileName.endsWith('.webp') ? fileName : `${fileName}.${safeExt}`;
         setSyncStatus({ type: 'pushing', message: '이미지 업로드 중...' });
         const url = await uploadImageToGitHub(dataUrl, finalFileName, token);
         if (url) {
+          // 上传成功后，切换到 GitHub URL（CDN 可能需要几秒才能更新）
           setter(url);
           setSyncStatus({ type: 'idle', message: '이미지 업로드 완료!', result: 'success' });
         } else {
-          setSyncStatus({ type: 'idle', message: '이미지 업로드 실패', result: 'error' });
+          // 上传失败，保持 base64 预览
+          setSyncStatus({ type: 'idle', message: '이미지 업로드 실패，请重试', result: 'error' });
         }
       } else {
         // 无 Token：提示用户设置 Token
@@ -218,17 +222,21 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       const token = getStoredToken();
 
       if (token) {
-        // 有 Token：立即上传到 GitHub，获取 URL
+        // 有 Token：先使用 base64 预览，然后上传到 GitHub
+        updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === testimonialIndex ? { ...t, avatar: dataUrl } : t) })); // 立即显示预览
+        
         const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
         const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
         const fileName = `testimonial-avatar-${testimonialIndex}-${Date.now()}.${safeExt}`;
         setSyncStatus({ type: 'pushing', message: '이미지 업로드 중...' });
         const url = await uploadImageToGitHub(dataUrl, fileName, token);
         if (url) {
+          // 上传成功后，切换到 GitHub URL
           updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === testimonialIndex ? { ...t, avatar: url } : t) }));
           setSyncStatus({ type: 'idle', message: '이미지 업로드 완료!', result: 'success' });
         } else {
-          setSyncStatus({ type: 'idle', message: '이미지 업로드 실패', result: 'error' });
+          // 上传失败，保持 base64 预览
+          setSyncStatus({ type: 'idle', message: '이미지 업로드 실패，请重试', result: 'error' });
         }
       } else {
         // 无 Token：提示用户设置 Token，暂时用 base64 预览（但不保存到 localStorage）
@@ -256,19 +264,23 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
       const token = getStoredToken();
 
       if (token) {
-        // 有 Token：立即上传到 GitHub，获取 URL（使用时间戳避免冲突）
+        // 有 Token：先使用 base64 预览，然后上传到 GitHub
+        updateHomeData({ logoImage: dataUrl }); // 立即显示预览
+        
         const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
         const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
         const fileName = `logo-${Date.now()}.${safeExt}`;
         setSyncStatus({ type: 'pushing', message: '로고 업로드 중...' });
         const url = await uploadImageToGitHub(dataUrl, fileName, token);
         if (url) {
+          // 上传成功后，切换到 GitHub URL
           updateHomeData({ logoImage: url });
           // 立即保存到 localStorage
           saveToLocalStorage({ homeData: { ...homeData, logoImage: url }, scopePosts, scopeCategories });
           setSyncStatus({ type: 'idle', message: '로고 업로드 완료!', result: 'success' });
         } else {
-          setSyncStatus({ type: 'idle', message: '로고 업로드 실패', result: 'error' });
+          // 上传失败，保持 base64 预览
+          setSyncStatus({ type: 'idle', message: '로고 업로드 실패，请重试', result: 'error' });
         }
       } else {
         // 无 Token：提示用户设置 Token
