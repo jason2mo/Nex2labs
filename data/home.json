@@ -1,7 +1,7 @@
 {
   "brandName": "NEXTO",
   "pageTitle": "세상을 잇는 넥스투",
-  "logoImage": "/Nex2labs/logo.png",
+  "logoImage": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/logo.png",
   "logoBackgroundColor": "transparent",
   "heroSmallTag": "Pioneering the Future of Cultural Exchange, NexTo.",
   "heroSmallTagFontSize": "10",
@@ -81,7 +81,7 @@
   ],
   "mgmtPreviewLabel": "PREVIEW",
   "loadingSubtext": "세상을 잇는중입니다 끙차><!",
-  "loadingLogo": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/loading-logo-1773949109304.png",
+  "loadingLogo": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/loading-logo.png",
   "loginButtonText": "로그인",
   "loginButtonFontSize": "12",
   "systemStatusText": "시스템 정상 작동 중",
