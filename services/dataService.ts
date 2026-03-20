@@ -427,6 +427,13 @@ export function clearAllData(): void {
   window.location.reload();
 }
 
+// 仅清除缓存不清除当前数据（用于下拉刷新，不触发页面重载）
+export function clearCacheOnly(): void {
+  localStorage.removeItem(STORAGE_KEYS.HOME_DATA);
+  localStorage.removeItem(STORAGE_KEYS.SCOPE_POSTS);
+  localStorage.removeItem(STORAGE_KEYS.SCOPE_CATEGORIES);
+}
+
 // 关闭网页时自动清除缓存
 export function setupAutoClearOnClose(): void {
   window.addEventListener('beforeunload', () => {

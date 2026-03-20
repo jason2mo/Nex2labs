@@ -12,7 +12,7 @@ import HomepageManagementView from './components/HomepageManagementView';
 import InquiryManagementView from './components/InquiryManagementView';
 import LoadingOverlay from './components/LoadingOverlay';
 import TeamView from './components/TeamView';
-import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, setupAutoClearOnClose, getStoredToken, saveAdminsToRepo, clearAllData } from './services/dataService';
+import { fetchPublicData, loadFromLocalStorage, saveToLocalStorage, setupAutoClearOnClose, getStoredToken, saveAdminsToRepo, clearCacheOnly } from './services/dataService';
 import { STORAGE_KEYS } from './constants';
 
 type ViewState = 'home' | 'scope_detail' | 'login' | 'dashboard' | 'collection' | 'homepage_mgmt' | 'inquiry_mgmt' | 'team';
@@ -61,16 +61,17 @@ const App: React.FC = () => {
 
     const doRefresh = async () => {
       setPullState('refreshing');
-      clearAllData();
-      setHomeData(DEFAULT_HOME_DATA);
-      setScopePosts([]);
-      setScopeCategories(DEFAULT_SCOPE_CATEGORIES);
+      clearCacheOnly();
+      // 不设置默认数据，直接请求 GitHub，保留当前渲染状态直到新数据到达
       try {
         const data = await fetchPublicData();
         if (data?.homeData) setHomeData(data.homeData);
         if (data?.scopePosts) setScopePosts(data.scopePosts);
         if (data?.scopeCategories) setScopeCategories(data.scopeCategories);
-      } catch {}
+      } catch {
+        setHomeData(DEFAULT_HOME_DATA);
+        setScopeCategories(DEFAULT_SCOPE_CATEGORIES);
+      }
       setPullState('idle');
     };
 
