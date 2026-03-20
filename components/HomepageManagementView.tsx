@@ -159,12 +159,44 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
     setDraggedItemIndex(null);
   };
 
-  const handleImgUpload = (setter: (val: string | null) => void, e: React.ChangeEvent<HTMLInputElement>) => {
+  // 通用的图片上传函数：有 Token 时立即上传到 GitHub，无 Token 时用 base64
+  const handleGenericImageUpload = async (
+    setter: (val: string | null) => void,
+    fileName: string,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // 检查文件大小（限制 2MB）
+    if (file.size > 2 * 1024 * 1024) {
+      alert('이미지 크기는 2MB 이하여야 합니다.');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      setter(ev.target?.result as string);
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const token = getStoredToken();
+
+      if (token) {
+        // 有 Token：立即上传到 GitHub，获取 URL
+        const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
+        const finalFileName = fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.gif') || fileName.endsWith('.webp') ? fileName : `${fileName}.${safeExt}`;
+        setSyncStatus({ type: 'pushing', message: '이미지 업로드 중...' });
+        const url = await uploadImageToGitHub(dataUrl, finalFileName, token);
+        if (url) {
+          setter(url);
+          setSyncStatus({ type: 'idle', message: '이미지 업로드 완료!', result: 'success' });
+        } else {
+          setSyncStatus({ type: 'idle', message: '이미지 업로드 실패', result: 'error' });
+        }
+      } else {
+        // 无 Token：提示用户设置 Token
+        alert('GitHub Token이 설정되지 않았습니다. 이미지를 저장하려면 Token을 설정해주세요.');
+        setter(dataUrl);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -202,6 +234,46 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
         // 无 Token：提示用户设置 Token，暂时用 base64 预览（但不保存到 localStorage）
         alert('GitHub Token이 설정되지 않았습니다. 이미지를 저장하려면 Token을 설정해주세요.');
         updateHomeData(prev => ({ ...prev, testimonials: prev.testimonials.map((t, idx) => idx === testimonialIndex ? { ...t, avatar: dataUrl } : t) }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 上传 logo 到 GitHub 并立即更新 homeData
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 检查文件大小（限制 2MB）
+    if (file.size > 2 * 1024 * 1024) {
+      alert('이미지 크기는 2MB 이하여야 합니다.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const token = getStoredToken();
+
+      if (token) {
+        // 有 Token：立即上传到 GitHub，获取 URL
+        const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'png';
+        const fileName = `logo.${safeExt}`;
+        setSyncStatus({ type: 'pushing', message: '로고 업로드 중...' });
+        const url = await uploadImageToGitHub(dataUrl, fileName, token);
+        if (url) {
+          updateHomeData({ logoImage: url });
+          // 立即保存到 localStorage
+          saveToLocalStorage({ homeData: { ...homeData, logoImage: url }, scopePosts, scopeCategories });
+          setSyncStatus({ type: 'idle', message: '로고 업로드 완료!', result: 'success' });
+        } else {
+          setSyncStatus({ type: 'idle', message: '로고 업로드 실패', result: 'error' });
+        }
+      } else {
+        // 无 Token：提示用户设置 Token
+        alert('GitHub Token이 설정되지 않았습니다. 이미지를 저장하려면 Token을 설정해주세요.');
+        updateHomeData({ logoImage: dataUrl });
       }
     };
     reader.readAsDataURL(file);
@@ -297,7 +369,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                     <p className="text-[10px] font-black text-white/50">클릭하여 로고 업로드</p>
                   </div>
                 )}
-                <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ logoImage: img }), e)} />
+                <input type="file" className="hidden" onChange={handleLogoUpload} />
               </label>
               <div className="mt-6">
                 <label className="text-[10px] font-black text-white/50 uppercase tracking-widest block mb-3">로고 배경색</label>
@@ -360,7 +432,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                       <p className="text-[9px] font-black text-white/50">클릭하여 로고 업로드</p>
                     </div>
                   )}
-                  <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ loadingLogo: img }), e)} />
+                  <input type="file" className="hidden" accept="image/*" onChange={e => handleGenericImageUpload(img => updateHomeData({ loadingLogo: img }), 'loading-logo.png', e)} />
                 </label>
                 <p className="text-[9px] text-white/50 mt-1">설정하면 메인 로고 대신 이 로고가 표시됩니다.</p>
               </div>
@@ -396,7 +468,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                     <p className="text-[10px] font-black text-white/50">히어로 배경 이미지 업로드</p>
                   </div>
                 )}
-                <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ heroImage: img }), e)} />
+                <input type="file" className="hidden" accept="image/*" onChange={e => handleGenericImageUpload(img => updateHomeData({ heroImage: img }), 'heroImage.jpg', e)} />
               </label>
             </div>
             <div className="space-y-2">
@@ -457,7 +529,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
               <label className="text-[10px] font-black text-white/50 uppercase">소개 이미지</label>
               <label className="block w-full bg-white/5 border-2 border-dashed border-white/20 py-8 text-center cursor-pointer hover:bg-white/10 mt-2 text-white">
                 {homeData.aboutImage ? <img src={homeData.aboutImage} className="max-h-24 mx-auto" alt="About" /> : <ImageIcon className="mx-auto opacity-20" />}
-                <input type="file" className="hidden" onChange={e => handleImgUpload(img => updateHomeData({ aboutImage: img }), e)} />
+                <input type="file" className="hidden" accept="image/*" onChange={e => handleGenericImageUpload(img => updateHomeData({ aboutImage: img }), 'aboutImage.png', e)} />
               </label>
             </div>
           </div>
@@ -1029,7 +1101,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                       <textarea value={m.bio} onChange={e => updateMember(m.id, { bio: e.target.value })} className="w-full bg-transparent border-b border-white/20 text-[10px] h-16 resize-none text-white" placeholder="소개글" />
                       <div>
                         <label className="text-[9px] font-black text-white/50 block mb-1">멤버 이미지</label>
-                        <input type="file" className="text-[9px] text-white/80" accept="image/*" onChange={e => handleImgUpload(img => updateMember(m.id, { image: img }), e)} />
+                        <input type="file" className="text-[9px] text-white/80" accept="image/*" onChange={e => handleGenericImageUpload(img => updateMember(m.id, { image: img }), `member-${m.id}.png`, e)} />
                       </div>
                     </div>
                   ))}
@@ -1054,7 +1126,7 @@ const HomepageManagementView: React.FC<HomepageManagementViewProps> = ({ homeDat
                    <textarea placeholder="포스트 내용" value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-transparent border-b border-white/20 py-2 text-xs h-32 text-white placeholder:text-white/40" />
                    <div className="space-y-2">
                      <label className="block text-[9px] font-black text-white/50">이미지 첨부</label>
-                     <input type="file" className="text-[10px] text-white/80" onChange={e => handleImgUpload(img => setNewPost({...newPost, imageUrl: img}), e)} />
+                     <input type="file" className="text-[10px] text-white/80" accept="image/*" onChange={e => handleGenericImageUpload(img => setNewPost({...newPost, imageUrl: img}), `post-${Date.now()}.jpg`, e)} />
                    </div>
                    <button onClick={handleSavePost} className="w-full bg-[#FAF9F6] text-black py-4 font-black text-xs uppercase tracking-widest hover:bg-[#e8e6e1]">포스트 저장</button>
                  </div>
