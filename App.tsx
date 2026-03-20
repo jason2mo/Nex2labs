@@ -452,17 +452,53 @@ const App: React.FC = () => {
         className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center pointer-events-none"
         style={{ transform: 'translateY(0)', opacity: 0, transition: 'transform 0.3s ease, opacity 0.3s ease' }}
       >
-        <div className="flex flex-col items-center gap-1 pt-4">
-          {pullState === 'triggered' || pullState === 'refreshing' ? (
-            <RefreshCw size={20} className="text-[#FF6B00] animate-spin" />
-          ) : (
-            <div className="w-5 h-5 border-2 border-[#FF6B00]/60 border-t-[#FF6B00] rounded-full animate-spin" style={{ animationDuration: '1.2s' }} />
-          )}
-          <span className="text-[9px] font-black text-[#FF6B00]/80 uppercase tracking-widest">
+        <div className="flex flex-col items-center gap-2 pt-4">
+          {/* 脉冲发光刷新图标 */}
+          <div className="relative w-12 h-12 flex items-center justify-center">
+            {/* 脉冲环 */}
+            <div className="absolute inset-0 rounded-full border border-white/40 animate-pulse-ring" style={{
+              animation: 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            }} />
+            <div className="absolute inset-0 rounded-full border border-white/30 animate-pulse-ring" style={{
+              animation: 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite 0.5s'
+            }} />
+            {/* 中心水滴形状 */}
+            <div className="relative z-10 w-4 h-5" style={{
+              background: 'radial-gradient(circle at 50% 30%, #FFFFFF 0%, #A0A0FF 100%)',
+              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+              filter: 'drop-shadow(0 0 8px rgba(160, 160, 255, 0.8)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))',
+              animation: pullState === 'refreshing' ? 'pulse-glow 1.5s ease-in-out infinite' : 'none'
+            }} />
+          </div>
+          <span className="text-[9px] font-black text-white/90 uppercase tracking-widest" style={{
+            textShadow: '0 0 8px rgba(255, 255, 255, 0.5)'
+          }}>
             {pullState === 'triggered' ? 'RELEASE TO REFRESH' : pullState === 'refreshing' ? 'REFRESHING...' : 'SCROLL UP'}
           </span>
         </div>
       </div>
+
+      {/* 脉冲动画样式 */}
+      <style>{`
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(0.3);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(2.5);
+            opacity: 0;
+          }
+        }
+        @keyframes pulse-glow {
+          0%, 100% {
+            filter: drop-shadow(0 0 8px rgba(160, 160, 255, 0.8)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+          }
+          50% {
+            filter: drop-shadow(0 0 16px rgba(160, 160, 255, 1)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+          }
+        }
+      `}</style>
 
       {!isAppReady && <LoadingOverlay brandName={homeData.brandName} logoImage={homeData.logoImage} loadingLogo={homeData.loadingLogo} loadingSubtext={homeData.loadingSubtext} />}
       
