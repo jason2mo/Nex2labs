@@ -12,7 +12,9 @@
   "heroImage": "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/heroImage.jpg",
   "realityIndex": "47.2%",
   "trustedCount": "20+",
-  "partnerLogos": [],
+  "partnerLogos": [
+    "https://raw.githubusercontent.com/jason2mo/Nex2labs/main/images/partner-0.png"
+  ],
   "aboutSmallTag": "NEXTO",
   "aboutTitle": "Professional Team",
   "aboutDescription": "우리의 네트워크는 지금 이 순간에도 확장되고 있으며, 앞으로 더 많은 글로벌 파트너들이 넥스투라는 다리를 통해 새로운 시장 기회를 창출하게 될 것입니다.",
